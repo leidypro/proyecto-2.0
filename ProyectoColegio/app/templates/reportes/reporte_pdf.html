@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      /* ===== CONFIGURACION GENERAL ===== */
+      /* ===== CONFIGURACION GENERAL ===== */
+      @page {
+        size: A4;
+        margin: 30px 40px;
+      }
+      
+      body {
+        font-family: 'Helvetica', Arial, sans-serif;
+        font-size: 12px;
+        color: #2c3e50;
+      }
+      
+      /* ===== ENCABEZADO ===== */
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 2px solid #1f4e79;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      
+      .header .logo img {
+        width: 90px;
+      }
+      
+      .header .titulo {
+        text-align: right;
+      }
+      
+      .header h1 {
+        margin: 0;
+        font-size: 20px;
+        color: #1f4e79;
+        letter-spacing: 1px;
+      }
+      
+      .header p {
+        margin: 3px 0 0 0;
+        font-size: 11px;
+        color: #555;
+      }
+      
+      /* ===== INFORMACION DEL REPORTE ===== */
+      .info {
+        font-size: 10px;
+        text-align: right;
+        margin-bottom: 10px;
+        color: #666;
+      }
+      
+      /* ===== TABLA ===== */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 11px;
+      }
+      
+      thead {
+        background: linear-gradient(to right, #1f4e79, #2f75b5);
+        color: white;
+      }
+      
+      th {
+        padding: 10px 6px;
+        text-align: center;
+        border: 1px solid #d0d7de;
+        font-weight: bold;
+      }
+      
+      td {
+        padding: 8px 6px;
+        border: 1px solid #e1e4e8;
+        text-align: left;
+      }
+      
+      /* Filas alternadas */
+      tbody tr:nth-child(even) {
+        background-color: #f4f6f8;
+      }
+      
+      /* Efecto visual limpio */
+      tbody tr:hover {
+        background-color: #e8f0fe;
+      }
+      
+      /* ===== TOTAL REGISTROS ===== */
+      .footer {
+        margin-top: 15px;
+        padding: 8px;
+        background-color: #f1f3f5;
+        border-left: 4px solid #1f4e79;
+        font-weight: bold;
+        font-size: 11px;
+      }
+      
+      /* ===== NUMERACION DE PAGINAS ===== */
+      @page {
+        @bottom-right {
+          content: 'Página ' counter(page) ' de ' counter(pages);
+          font-size: 10px;
+          color: #555;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ENCABEZADO DEL REPORTE -->
+    <div class="header">
+      <div class="logo">
+        <img src="{{ logo_url }}" alt="Logo Colegio" />
+      </div>
+
+      <div class="titulo">
+        <h1>{{ titulo }}</h1>
+        <p>Reporte generado automáticamente</p>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <table>
+      <thead>
+        <tr>
+          {% for columna in columnas %}
+            <th>{{ columna }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for fila in datos %}
+          <tr>
+            {% for valor in fila %}
+              <td>{{ valor }}</td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="footer">
+      <p>Total de registros: {{ datos|length }}</p>
+    </div>
+
+    <div class="info">Generado el: {{ now|date:'d/m/Y H:i:s' }}</div>
+  </body>
+</html>

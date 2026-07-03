@@ -1,0 +1,408 @@
+{% extends 'create_generic.html' %}
+{% load widget_tweaks %}
+{% block breadcrumb_list %}Usuario{% endblock %}
+{% block breadcrumb_active %}
+{% if object %}Editar Usuario{% else %}Nuevo Usuario{% endif %}
+{% endblock %}
+{% block titulo %}
+  {{ titulo }}
+{% endblock %}
+
+{% block form %}
+  {% csrf_token %}
+
+  {# ===== FORMULARIO DE USUARIO — 2 columnas ===== #}
+  <div class="row">
+
+    {# Columna izquierda: nombre, email, foto #}
+    <div class="col-md-6">
+      {% for field in usuario_form.visible_fields %}
+        {% if field.name == 'nombre' or field.name == 'email' or field.name == 'img_usuario' %}
+          <div class="mb-3">
+            <label class="form-label fw-bold" style="color: #1C2E4A;">{{ field.label }}</label>
+            {% if field.name == 'img_usuario' %}
+              {{ field|add_class:'form-control' }}
+            {% else %}
+              {{ field|add_class:'form-control form-control-custom' }}
+              <span id="error_{{ field.name }}" class="small d-block mt-1"></span>
+            {% endif %}
+            {% if field.errors %}
+              {% for error in field.errors %}
+                <div class="text-danger mt-1 small"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {# Columna derecha: estado siempre visible + password oculto para estudiante/acudiente #}
+    <div class="col-md-6">
+      {# Estado: siempre visible #}
+      {% for field in usuario_form.visible_fields %}
+        {% if field.name == 'estado' %}
+          <div class="mb-3">
+            <label class="form-label fw-bold" style="color: #1C2E4A;">{{ field.label }}</label>
+            {{ field|add_class:'form-control form-control-custom' }}
+            <span id="error_estado" class="small d-block mt-1"></span>
+          </div>
+        {% endif %}
+      {% endfor %}
+      {# Password: oculto para estudiante y acudiente #}
+      <div id="col-password">
+      {% for field in usuario_form.visible_fields %}
+        {% if field.name != 'nombre' and field.name != 'email' and field.name != 'codigo' and field.name != 'img_usuario' and field.name != 'estado' %}
+          <div class="mb-3">
+            <label class="form-label fw-bold" style="color: #1C2E4A;">{{ field.label }}</label>
+
+            {% if field.name == 'password' %}
+              <div class="input-group">
+                {{ field|add_class:'form-control form-control-custom'|attr:'id:id_password' }}
+                <button class="btn btn-outline-secondary" type="button"
+                        onclick="togglePassword('id_password', 'eye_password')" tabindex="-1">
+                  <i id="eye_password" class="fas fa-eye"></i>
+                </button>
+              </div>
+              <div class="progress mt-2" style="height: 6px; background-color: #e9ecef;">
+                <div id="barra-fuerza" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+              </div>
+              <span id="error_password" class="small"></span>
+            {% else %}
+              {{ field|add_class:'form-control form-control-custom' }}
+              <span id="error_{{ field.name }}" class="small d-block mt-1"></span>
+            {% endif %}
+
+            {% if field.errors %}
+              {% for error in field.errors %}
+                <div class="text-danger mt-1 small"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</div>
+              {% endfor %}
+            {% endif %}
+          </div>
+
+          {% if field.name == 'password' %}
+            <div class="mb-3">
+              <label class="form-label fw-bold" style="color: #1C2E4A;">Confirmar Contraseña</label>
+              <div class="input-group">
+                <input type="password" id="id_confirmar_password" name="confirmar_password"
+                       class="form-control form-control-custom" placeholder="Repite la contraseña">
+                <button class="btn btn-outline-secondary" type="button"
+                        onclick="togglePassword('id_confirmar_password', 'eye_confirmar')" tabindex="-1">
+                  <i id="eye_confirmar" class="fas fa-eye"></i>
+                </button>
+              </div>
+              <span id="error_confirmar_password" class="small"></span>
+            </div>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+      </div>{# /col-password #}
+    </div>
+  </div>
+
+  {# ===== SELECT DE ROL ===== #}
+  <div class="mb-3">
+    <label class="form-label fw-bold" style="color: #1C2E4A;">Rol</label>
+    <select id="rol-select" name="rol" class="form-control" required>
+      <option value="">Seleccione un rol</option>
+      <option value="administrador" {% if rol_actual == 'administrador' %}selected{% endif %}>Administrador</option>
+      <option value="docente"       {% if rol_actual == 'docente' %}selected{% endif %}>Docente</option>
+      <option value="estudiante"    {% if rol_actual == 'estudiante' %}selected{% endif %}>Estudiante</option>
+      <option value="acudiente"     {% if rol_actual == 'acudiente' %}selected{% endif %}>Acudiente</option>
+    </select>
+  </div>
+
+  {# ===== FORMULARIOS POR ROL ===== #}
+
+  {# --- Administrador --- #}
+  <div id="administrador-form" class="rol-form" style="display:none;">
+    <hr class="my-3">
+    <h6 class="fw-bold mb-3" style="color:#1C2E4A;"><i class="fas fa-user-shield me-2"></i>Datos del Administrador</h6>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Cargo</label>
+        {{ admin_form.cargo|add_class:'form-control' }}
+      </div>
+    </div>
+  </div>
+
+  {# --- Docente --- #}
+  <div id="docente-form" class="rol-form" style="display:none;">
+    <hr class="my-3">
+    <h6 class="fw-bold mb-3" style="color:#1C2E4A;"><i class="fas fa-chalkboard-teacher me-2"></i>Datos del Docente</h6>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Especialidad</label>
+        {{ docente_form.especialidad|add_class:'form-control' }}
+      </div>
+    </div>
+  </div>
+
+  {# --- Estudiante + Acudiente juntos --- #}
+  <div id="estudiante-form" class="rol-form" style="display:none;">
+    <hr class="my-3">
+    <h6 class="fw-bold mb-3" style="color:#1C2E4A;"><i class="fas fa-user-graduate me-2"></i>Datos del Estudiante</h6>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Fecha de Nacimiento</label>
+        {{ estudiante_form.fechaNacimiento|add_class:'form-control'|attr:'type:date' }}
+        <div id="error-fechaNacimiento" class="text-danger mt-1 small" style="display:none;">
+          <i class="fas fa-exclamation-circle me-1"></i> La fecha de nacimiento no puede ser el día de hoy.
+        </div>
+        {% if estudiante_form.fechaNacimiento.errors %}
+          {% for error in estudiante_form.fechaNacimiento.errors %}
+            <div class="text-danger mt-1 small"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</div>
+          {% endfor %}
+        {% endif %}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Estado Matrícula</label>
+        {{ estudiante_form.estadoMatricula|add_class:'form-control' }}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Fecha de Ingreso</label>
+        {{ estudiante_form.fechaIngreso|add_class:'form-control'|attr:'type:date' }}
+      </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-bold">Curso</label>
+      
+      {{ estudiante_form.cursoId|add_class:'form-control' }}
+      <script>
+        console.log("Aqui va el error del curso:", "{{ estudiante_form.cursoId.error}}");
+      </script>
+
+      {% if estudiante_form.cursoId.errors %}
+        {% for error in estudiante_form.cursoId.errors %}
+          <div class="text-danger mt-1 small">
+            <i class="fas fa-exclamation-circle me-1"></i> {{ error }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+    </div>
+    <hr class="my-3">
+<h6 class="fw-bold mb-3" style="color:#1C2E4A;">
+  <i class="fas fa-user-friends me-2"></i>Datos del Acudiente
+  {% if acudiente_readonly %}
+    <span class="badge ms-2" style="background-color:#6c757d; font-size:0.75rem;">Solo lectura</span>
+  {% endif %}
+</h6>
+<div class="row">
+
+  <div class="col-md-6 mb-3">
+    <label class="form-label fw-bold">Nombre</label>
+    {% if acudiente_readonly %}
+      {{ acudiente_form.nombre_acudiente }}
+    {% else %}
+      {{ acudiente_form.nombre_acudiente|add_class:'form-control form-control-custom' }}
+      {% if acudiente_form.nombre_acudiente.errors %}
+        {% for error in acudiente_form.nombre_acudiente.errors %}
+          <div class="text-danger mt-1 small"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <div class="col-md-6 mb-3">
+    <label class="form-label fw-bold">Email</label>
+    {% if acudiente_readonly %}
+      {{ acudiente_form.email_acudiente }}
+    {% else %}
+      {{ acudiente_form.email_acudiente|add_class:'form-control form-control-custom' }}
+      {% if acudiente_form.email_acudiente.errors %}
+        {% for error in acudiente_form.email_acudiente.errors %}
+          <div class="text-danger mt-1 small"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <div class="col-md-6 mb-3">
+    <label class="form-label fw-bold">Teléfono</label>
+    {% if acudiente_readonly %}
+      {{ acudiente_form.telefono }}
+    {% else %}
+      {{ acudiente_form.telefono|add_class:'form-control' }}
+      {% if acudiente_form.telefono.errors %}
+        {% for error in acudiente_form.telefono.errors %}
+          <div class="text-danger mt-1 small"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <div class="col-md-6 mb-3">
+    <label class="form-label fw-bold">Dirección</label>
+    {% if acudiente_readonly %}
+      {{ acudiente_form.direccion }}
+    {% else %}
+      {{ acudiente_form.direccion|add_class:'form-control' }}
+      {% if acudiente_form.direccion.errors %}
+        {% for error in acudiente_form.direccion.errors %}
+          <div class="text-danger mt-1 small"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {% if acudiente_readonly %}
+  <div class="col-12">
+    <div class="alert alert-info py-2 px-3 small mb-0" style="border-radius: 8px;">
+      <i class="fas fa-info-circle me-1"></i>
+      Los datos del acudiente se gestionan desde el módulo <strong>Relaciones Estudiante-Acudiente</strong>.
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+  </div>
+
+  {# --- Acudiente standalone --- #}
+  <div id="acudiente-form" class="rol-form" style="display:none;">
+    <hr class="my-3">
+    <h6 class="fw-bold mb-3" style="color:#1C2E4A;"><i class="fas fa-user-friends me-2"></i>Datos del Acudiente</h6>
+    <div class="row">
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Teléfono</label>
+        {{ acudiente_solo_form.telefono|add_class:'form-control' }}
+        {% if acudiente_solo_form.telefono.errors %}
+          {% for error in acudiente_solo_form.telefono.errors %}
+            <div class="text-danger mt-1 small"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</div>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Dirección</label>
+        {{ acudiente_solo_form.direccion|add_class:'form-control' }}
+        {% if acudiente_solo_form.direccion.errors %}
+          {% for error in acudiente_solo_form.direccion.errors %}
+            <div class="text-danger mt-1 small"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</div>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon  = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+      const SOLO_LETRAS  = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]$/;
+      const SOLO_DIGITOS = /^\d$/;
+
+      function bloquearTeclas(selector, regex) {
+        document.querySelectorAll(selector).forEach(function (el) {
+          el.addEventListener('keypress', function (e) {
+            if (e.key.length > 1) return;
+            if (!regex.test(e.key)) e.preventDefault();
+          });
+          el.addEventListener('paste', function (e) {
+            const texto = (e.clipboardData || window.clipboardData).getData('text');
+            if (!texto.split('').every(c => regex.test(c))) e.preventDefault();
+          });
+        });
+      }
+
+      bloquearTeclas(
+        'input[name="nombre"], input[name="cargo"], input[name="especialidad"], input[name="nombre_acudiente"]',
+        SOLO_LETRAS
+      );
+      bloquearTeclas(
+        'input[name="codigo"], input[name="telefono"]',
+        SOLO_DIGITOS
+      );
+
+      const rolSelect  = document.getElementById('rol-select');
+      const rolForms   = document.querySelectorAll('.rol-form');
+      const colPassword = document.getElementById('col-password');
+
+      // Inputs de contraseña para deshabilitar/habilitar
+      const passwordInput  = document.getElementById('id_password');
+      const confirmarInput = document.getElementById('id_confirmar_password');
+
+      function toggleRolForm() {
+        const sinPassword = rolSelect.value === 'acudiente' || rolSelect.value === 'estudiante';
+
+        // Ocultar/mostrar solo el bloque de contraseñas
+        colPassword.style.display = sinPassword ? 'none' : '';
+
+        // Deshabilitar inputs ocultos para que no se envíen ni validen
+        if (passwordInput)  passwordInput.disabled  = sinPassword;
+        if (confirmarInput) confirmarInput.disabled = sinPassword;
+
+        // Mostrar/ocultar formularios por rol
+        rolForms.forEach(div => {
+          div.style.display = 'none';
+          div.querySelectorAll('input, select, textarea').forEach(inp => {
+            inp.disabled = true;
+          });
+        });
+
+        if (rolSelect.value) {
+          const formActivo = document.getElementById(rolSelect.value + '-form');
+          if (formActivo) {
+            formActivo.style.display = 'block';
+            formActivo.querySelectorAll('input, select, textarea').forEach(inp => {
+              inp.disabled = false;
+            });
+          }
+        }
+      }
+
+      rolSelect.addEventListener('change', toggleRolForm);
+      toggleRolForm();
+
+      // Validación: fecha de nacimiento no puede ser hoy
+      const fechaNacInput = document.getElementById('id_fechaNacimiento');
+      if (fechaNacInput) {
+        fechaNacInput.addEventListener('change', function () {
+          const errorDiv = document.getElementById('error-fechaNacimiento');
+          const hoy = new Date().toISOString().split('T')[0];
+          if (this.value === hoy) {
+            errorDiv.style.display = 'block';
+            this.classList.add('is-invalid');
+          } else {
+            errorDiv.style.display = 'none';
+            this.classList.remove('is-invalid');
+          }
+        });
+      }
+
+      // Bloquear envío si fecha de nacimiento es hoy (rol estudiante)
+      const formulario = document.querySelector('form');
+      if (formulario) {
+        formulario.addEventListener('submit', function (e) {
+          if (rolSelect.value === 'estudiante') {
+            const fechaNacInput = document.getElementById('id_fechaNacimiento');
+            if (fechaNacInput) {
+              const hoy = new Date().toISOString().split('T')[0];
+              if (fechaNacInput.value === hoy) {
+                e.preventDefault();
+                const errorDiv = document.getElementById('error-fechaNacimiento');
+                errorDiv.style.display = 'block';
+                fechaNacInput.classList.add('is-invalid');
+                fechaNacInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }
+          }
+        });
+      }
+    });
+  </script>
+  {% load static %} {% block javascript %}
+    <script src="{% static 'Js/validaciones.js' %}"></script>
+  {% endblock %}
+{% endblock %}

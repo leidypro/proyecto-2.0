@@ -1,0 +1,13 @@
+{% extends 'Create_generic.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% block breadcrumb_list %}Unidades de Medida{% endblock %}
+{% block breadcrumb_active %}
+{% if object %}Editar Unidad de Medida{% else %}Nueva Unidad de Medida{% endif %}
+{% endblock %}
+
+{% block titulo %}
+Crear Unidad de Medida
+{% endblock %}
+
+

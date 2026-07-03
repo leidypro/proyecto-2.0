@@ -1,0 +1,13 @@
+{% extends 'Create_generic.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% block breadcrumb_list %}Categorías{% endblock %}
+{% block breadcrumb_active %}
+{% if object %}Editar Categoría{% else %}Nueva Categoría{% endif %}
+{% endblock %}
+
+{% block titulo %}
+Crear Categoria
+{% endblock %}
+
+

@@ -1,0 +1,389 @@
+{% extends 'body.html' %}
+{% load static %}
+
+{% block main %}
+<div class="container-fluid px-3 px-sm-4 py-3 main-content-glass">
+
+    <h3 class="mb-4 d-flex align-items-center gap-2" style="color: #1C2E4A; font-weight: 700;">
+        <i class="fas fa-shield-alt text-primary"></i>
+        Permisos de <span style="color: #007bff;">{{ usuario.nombre }}</span>
+    </h3>
+
+    <div class="card mb-3 p-4 shadow-sm border-0 rounded-4 bg-white">
+        <form method="post">
+            {% csrf_token %}
+
+            <h5 class="mb-3 d-flex align-items-center gap-2" style="color: #1C2E4A; font-weight: 600;">
+                <i class="fas fa-users-cog"></i> Roles del usuario
+            </h5>
+            <div class="row g-3">
+                {% for grupo in grupos %}
+                <div class="col-12 col-md-4">
+                    <div class="form-check role-badge-box d-flex align-items-center">
+                        <input class="form-check-input me-2"
+                               type="checkbox"
+                               name="grupos"
+                               id="grupo_{{ grupo.id }}"
+                               value="{{ grupo.id }}"
+                               {% if grupo.id in grupos_actuales %}checked{% endif %}>
+                        <label class="form-check-label w-100 py-1" for="grupo_{{ grupo.id }}">
+                            {{ grupo.name }}
+                        </label>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <hr class="my-4 opacity-25">
+
+            <h5 class="mb-3 d-flex align-items-center gap-2" style="color: #1C2E4A; font-weight: 600;">
+                <i class="fas fa-key"></i> Permisos individuales
+            </h5>
+
+            <div class="row g-3">
+                {% for modelo, permisos in permisos_por_modelo.items %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="permiso-dropdown" id="dd_wrapper_{{ forloop.counter }}">
+
+                        <!-- Header / trigger -->
+                        <button type="button"
+                                class="dd-trigger w-100 d-flex align-items-center gap-2"
+                                data-target="dd_panel_{{ forloop.counter }}">
+                            <i class="fas fa-cubes text-secondary" style="font-size:13px;"></i>
+                            <span class="flex-grow-1 text-start dd-label">{{ modelo|title }}</span>
+                            <span class="badge-contador" id="contador_{{ forloop.counter }}">0/{{ permisos|length }}</span>
+                            <i class="fas fa-chevron-down dd-chevron"></i>
+                        </button>
+
+                        <!-- Panel desplegable -->
+                        <div class="dd-panel" id="dd_panel_{{ forloop.counter }}">
+                            <div class="dd-inner">
+
+                                <button type="button"
+                                        class="btn-toggle-all w-100 mb-2"
+                                        data-target="grupo_permisos_{{ forloop.counter }}">
+                                    <i class="fas fa-check-double me-1"></i>
+                                    <span class="toggle-label">Marcar todo</span>
+                                </button>
+
+                                <div class="d-flex flex-column gap-1" id="grupo_permisos_{{ forloop.counter }}">
+                                    {% for p in permisos %}
+                                    <div class="form-check permiso-item rounded-2 p-2 px-3">
+                                        <input class="form-check-input me-2"
+                                               type="checkbox"
+                                               name="permisos"
+                                               value="{{ p.id }}"
+                                               data-grupo-ui="{{ forloop.parentloop.counter }}"
+                                               {% if p.id in permisos_actuales %}checked{% endif %}>
+                                        <label class="form-check-label">{{ p.name }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-save w-100 mt-4 py-2-5 shadow-sm text-white fw-bold">
+                <i class="fas fa-save me-2"></i> Guardar Cambios
+            </button>
+
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Roles */
+    .role-badge-box {
+        background-color: #FFF0F2;
+        border-radius: 12px;
+        padding: 10px 14px;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+    }
+    .role-badge-box:hover {
+        background-color: #ffffff;
+        border-color: #FCD7D9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+    }
+    .role-badge-box:has(.form-check-input:checked) {
+        border-color: #1C2E4A;
+        background-color: #f0f4fa;
+    }
+
+    .form-check-input:checked {
+        background-color: #1C2E4A !important;
+        border-color: #1C2E4A !important;
+    }
+
+    /* Dropdown wrapper */
+    .permiso-dropdown {
+        position: relative;
+        border-radius: 12px;
+        border: 1px solid #dee2e6;
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        transition: border-color 0.2s;
+        overflow: visible;
+    }
+    .permiso-dropdown.abierto {
+        border-color: #1C2E4A;
+        box-shadow: 0 4px 16px rgba(28,46,74,0.10);
+    }
+
+    /* Trigger (header del dropdown) */
+    .dd-trigger {
+        background: transparent;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        color: #1C2E4A;
+        transition: background 0.15s;
+    }
+    .dd-trigger:hover {
+        background-color: #FFF0F2;
+    }
+    .permiso-dropdown.abierto .dd-trigger {
+        background-color: #FFF0F2;
+        border-radius: 12px 12px 0 0;
+    }
+    .dd-chevron {
+        font-size: 11px;
+        color: #6c757d;
+        transition: transform 0.2s ease;
+    }
+    .permiso-dropdown.abierto .dd-chevron {
+        transform: rotate(180deg);
+    }
+
+    /* Panel desplegable */
+    .dd-panel {
+        display: none;
+        border-top: 1px solid #f0f0f0;
+        background: #fafafa;
+        border-radius: 0 0 12px 12px;
+        overflow: hidden;
+    }
+    .dd-panel.visible {
+        display: block;
+    }
+    .dd-inner {
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+    /* Badge contador */
+    .badge-contador {
+        font-size: 11px;
+        font-weight: 600;
+        background-color: #e9ecef;
+        color: #495057;
+        border-radius: 20px;
+        padding: 2px 8px;
+        min-width: 36px;
+        text-align: center;
+        transition: background-color 0.2s, color 0.2s;
+    }
+    .badge-contador.tiene-activos {
+        background-color: #1C2E4A;
+        color: #ffffff;
+    }
+    .badge-contador.todos-activos {
+        background-color: #007bff;
+        color: #ffffff;
+    }
+
+    /* Botón marcar/desmarcar todo */
+    .btn-toggle-all {
+        font-size: 12px;
+        font-weight: 600;
+        color: #1C2E4A;
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-toggle-all:hover {
+        background-color: #FFF0F2;
+        border-color: #FCD7D9;
+    }
+    .btn-toggle-all.todos-marcados {
+        background-color: #f0f4fa;
+        border-color: #1C2E4A;
+        color: #1C2E4A;
+    }
+
+    /* Permisos individuales */
+    .permiso-item {
+        transition: background 0.15s;
+    }
+    .text-primary-custom {
+        background-color: #eef2ff;
+        border-radius: 6px;
+    }
+
+    /* Botón guardar */
+    .btn-save {
+        background-color: #1C2E4A;
+        border-radius: 12px;
+        border: none;
+        transition: all 0.2s ease;
+    }
+    .btn-save:hover {
+        background-color: #111d30;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(28, 46, 74, 0.15);
+    }
+</style>
+
+<script>
+    const gruposPermisosMap = {{ grupos_permisos_map|safe }};
+</script>
+
+<script>
+    const grupoCheckboxes = document.querySelectorAll('input[name="grupos"]');
+    const permisoCheckboxes = document.querySelectorAll('input[name="permisos"]');
+
+    // --- Dropdown: abrir/cerrar ---
+    document.querySelectorAll('.dd-trigger').forEach(trigger => {
+        trigger.addEventListener('click', () => {
+            const targetId = trigger.dataset.target;
+            const panel = document.getElementById(targetId);
+            const wrapper = trigger.closest('.permiso-dropdown');
+            const estaAbierto = panel.classList.contains('visible');
+
+            // Cerrar todos
+            document.querySelectorAll('.dd-panel').forEach(p => p.classList.remove('visible'));
+            document.querySelectorAll('.permiso-dropdown').forEach(w => w.classList.remove('abierto'));
+
+            // Abrir el clickeado si estaba cerrado
+            if (!estaAbierto) {
+                panel.classList.add('visible');
+                wrapper.classList.add('abierto');
+            }
+        });
+    });
+
+    // --- Contador por módulo ---
+    function actualizarContador(grupoUiId) {
+        const contenedor = document.getElementById(`grupo_permisos_${grupoUiId}`);
+        if (!contenedor) return;
+        const todos = contenedor.querySelectorAll('input[name="permisos"]');
+        const marcados = contenedor.querySelectorAll('input[name="permisos"]:checked');
+        const badge = document.getElementById(`contador_${grupoUiId}`);
+        const btnToggle = document.querySelector(`[data-target="grupo_permisos_${grupoUiId}"]`);
+        if (!badge) return;
+
+        badge.textContent = `${marcados.length}/${todos.length}`;
+        badge.classList.remove('tiene-activos', 'todos-activos');
+
+        const todosMarcados = marcados.length === todos.length && todos.length > 0;
+        if (todosMarcados) {
+            badge.classList.add('todos-activos');
+        } else if (marcados.length > 0) {
+            badge.classList.add('tiene-activos');
+        }
+
+        if (btnToggle) {
+            const label = btnToggle.querySelector('.toggle-label');
+            if (todosMarcados) {
+                label.textContent = 'Desmarcar todo';
+                btnToggle.classList.add('todos-marcados');
+            } else {
+                label.textContent = 'Marcar todo';
+                btnToggle.classList.remove('todos-marcados');
+            }
+        }
+    }
+
+    function actualizarTodosContadores() {
+        document.querySelectorAll('[id^="grupo_permisos_"]').forEach(contenedor => {
+            const id = contenedor.id.replace('grupo_permisos_', '');
+            actualizarContador(id);
+        });
+    }
+
+    // --- Marcar/desmarcar todo en un módulo ---
+    document.querySelectorAll('.btn-toggle-all').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation(); // evita que cierre el dropdown
+            const targetId = btn.dataset.target;
+            const contenedor = document.getElementById(targetId);
+            if (!contenedor) return;
+            const checkboxes = contenedor.querySelectorAll('input[name="permisos"]');
+            const todosChecked = [...checkboxes].every(cb => cb.checked);
+
+            checkboxes.forEach(cb => {
+                cb.checked = !todosChecked;
+                const item = cb.closest('.permiso-item');
+                if (cb.checked) {
+                    cb.dataset.manual = 'true';
+                    if (item) item.classList.add('text-primary-custom');
+                } else {
+                    delete cb.dataset.manual;
+                    if (item) item.classList.remove('text-primary-custom');
+                }
+            });
+
+            actualizarContador(targetId.replace('grupo_permisos_', ''));
+        });
+    });
+
+    // --- Lógica permisos por grupos ---
+    function actualizarPermisosPorGrupos() {
+        const permisosDeGrupos = new Set();
+        grupoCheckboxes.forEach(cb => {
+            if (cb.checked) {
+                (gruposPermisosMap[cb.value] || []).forEach(id => permisosDeGrupos.add(String(id)));
+            }
+        });
+
+        permisoCheckboxes.forEach(cb => {
+            const item = cb.closest('.permiso-item');
+            if (permisosDeGrupos.has(cb.value)) {
+                cb.checked = true;
+                if (item) item.classList.add('text-primary-custom');
+            } else if (!cb.dataset.manual) {
+                cb.checked = false;
+                if (item) item.classList.remove('text-primary-custom');
+            }
+        });
+
+        actualizarTodosContadores();
+    }
+
+    // --- Listeners permisos individuales ---
+    permisoCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            const item = cb.closest('.permiso-item');
+            if (cb.checked) {
+                cb.dataset.manual = 'true';
+                if (item) item.classList.add('text-primary-custom');
+            } else {
+                delete cb.dataset.manual;
+                if (item) item.classList.remove('text-primary-custom');
+            }
+            if (cb.dataset.grupoUi) actualizarContador(cb.dataset.grupoUi);
+        });
+    });
+
+    // --- Listeners grupos ---
+    grupoCheckboxes.forEach(cb => {
+        cb.addEventListener('change', actualizarPermisosPorGrupos);
+    });
+
+    // --- Init ---
+    actualizarPermisosPorGrupos();
+</script>
+{% endblock %}

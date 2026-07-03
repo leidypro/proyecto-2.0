@@ -1,0 +1,408 @@
+{% extends 'list_generic.html' %}
+{% load static %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block subtitulo %}{{ subtitulo }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Usuarios</li>
+{% endblock %}
+
+{% block extra_cards %}
+<div class="col-12 col-sm-6 col-lg-3">
+    <div class="card card-stats h-100 shadow-sm border-0">
+        <div class="card-body d-flex flex-column justify-content-center py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="pe-2">
+                    <p class="text-muted mb-1 small fw-medium text-uppercase tracking-wider">
+                        Activos
+                    </p>
+                    <h3 class="fw-bold text-success mb-0 fs-2">
+                        {{ activos|default:"0" }}
+                    </h3>
+                </div>
+                <div class="icon-wrapper bg-white bg-opacity-50 p-2 rounded-3">
+                    <i class="fa-solid fa-user-check fa-2x text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-12 col-sm-6 col-lg-3">
+    <div class="card card-stats h-100 shadow-sm border-0">
+        <div class="card-body d-flex flex-column justify-content-center py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                
+                <div class="pe-2 flex-grow-1">
+                    <p class="text-muted mb-1 small fw-medium text-uppercase tracking-wider">
+                        Por rol
+                    </p>
+
+                    <div class="d-flex gap-1 flex-wrap">
+                        <span class="badge small" style="background:#1C2E4A;">
+                            <i class="fas fa-user-graduate me-1"></i>
+                            <span class="d-none d-sm-inline">Est:</span>
+                            {{ estudiantes_count }}
+                        </span>
+
+                        <span class="badge small" style="background:#1C2E4A;">
+                            <i class="fas fa-chalkboard-teacher me-1"></i>
+                            <span class="d-none d-sm-inline">Doc:</span>
+                            {{ docentes_count }}
+                        </span>
+
+                        <span class="badge small" style="background:#1C2E4A;">
+                            <i class="fas fa-user-shield me-1"></i>
+                            <span class="d-none d-sm-inline">Adm:</span>
+                            {{ administradores_count }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="icon-wrapper bg-white bg-opacity-50 p-2 rounded-3">
+                    <i class="fa-solid fa-id-card fa-2x text-info"></i>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block exportar %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+
+  <div class="d-flex gap-2 flex-wrap">
+
+    {% if perms.app.view_usuario %}
+    <a href="#" class="btn-pdf" id="ExportarPdf">
+      <i class="fas fa-file-pdf me-1"></i> Descargar PDF
+    </a>
+
+    <a href="#" class="btn-excel" id="ExportarExcel">
+      <i class="fas fa-file-excel me-1"></i> Descargar Excel
+    </a>
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block filtros_adicionales %}
+<div class="card card-custom mb-3 p-3 shadow-sm border-0 rounded-4" style="background: #f8f9fa;">
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <i class="fas fa-filter me-2 text-muted"></i>
+    <span class="fw-semibold text-muted small">Filtros:</span>
+    
+    <input type="text"
+           id="buscar"
+           name="buscar"
+           placeholder="Buscar usuario..."
+           class="form-control form-control-sm"
+           style="min-width: 200px;"
+           value="{{ request.GET.buscar|default:'' }}">
+
+    <select id="rol"
+            name="rol"
+            class="form-select form-select-sm"
+            style="min-width: 160px;">
+
+      <option value="">Todos los roles</option>
+      <option value="Administrador" {% if request.GET.rol == 'Administrador' %}selected{% endif %}>Administrador</option>
+      <option value="Docente" {% if request.GET.rol == 'Docente' %}selected{% endif %}>Docente</option>
+      <option value="Estudiante" {% if request.GET.rol == 'Estudiante' %}selected{% endif %}>Estudiante</option>
+      <option value="Acudiente" {% if request.GET.rol == 'Acudiente' %}selected{% endif %}>Acudiente</option>
+    </select>
+
+    <select id="estado"
+            name="estado"
+            class="form-select form-select-sm"
+            style="min-width: 140px;">
+
+      <option value="">Todos</option>
+      <option value="1" {% if request.GET.estado == '1' %}selected{% endif %}>Activo</option>
+      <option value="0" {% if request.GET.estado == '0' %}selected{% endif %}>Inactivo</option>
+    </select>
+
+    <select id="filtro_curso"
+            name="curso"
+            class="form-select form-select-sm"
+            style="min-width: 180px;">
+      <option value="">Todos los cursos</option>
+      {% for curso in cursos %}
+      <option value="{{ curso.id }}" {% if request.GET.curso == curso.id|stringformat:"i" %}selected{% endif %}>
+        {{ curso.codigo }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <button type="button" id="btn_filtrar" class="btn btn-sm btn-primary">
+      <i class="fas fa-search me-1"></i> Filtrar
+    </button>
+
+    <a href="?" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-undo me-1"></i> Limpiar
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block columns %}
+  <th class="d-none d-md-table-cell">
+    <i class="fas fa-hashtag me-2"></i>ID
+  </th>
+
+  <th>
+    <i class="fas fa-user me-2"></i>Nombre
+  </th>
+
+  <th class="d-none d-lg-table-cell">
+    <i class="fas fa-envelope me-2"></i>Email
+  </th>
+
+  <th class="text-center">
+    <i class="fas fa-user-shield me-2"></i>Rol
+  </th>
+
+  <th class="text-center d-none d-xl-table-cell">
+    <i class="fas fa-circle me-2"></i>Estado
+  </th>
+
+  <th class="text-center d-none d-sm-table-cell">
+    <i class="fa-regular fa-file-image me-2"></i>Foto
+  </th>
+
+  {% if perms.app.view_usuario or perms.app.change_usuario or perms.app.delete_usuario %}
+  <th class="text-center">
+    <i class="fas fa-tools me-2"></i>
+    <span class="d-none d-md-inline">Acciones</span>
+  </th>
+  {% endif %}
+{% endblock %}
+
+{% block rows %}
+  {% for usuario in object_list %}
+  <tr>
+
+    <td class="d-none d-md-table-cell">
+      {{ usuario.id }}
+    </td>
+
+    <td>
+      {{ usuario.nombre|truncatechars:30 }}
+    </td>
+
+    <td class="d-none d-lg-table-cell">
+      {{ usuario.email }}
+    </td>
+
+    <td class="text-center">
+      {% with rol=usuario.get_rol %}
+
+        {% if rol == "Administrador" %}
+          <span class="badge small" style="background:#1C2E4A;">
+            <i class="fas fa-user-shield me-1 d-none d-sm-inline"></i>Administrador
+          </span>
+
+        {% elif rol == "Docente" %}
+          <span class="badge small" style="background:#1C2E4A;">
+            <i class="fas fa-chalkboard-teacher me-1 d-none d-sm-inline"></i>Docente
+          </span>
+
+        {% elif rol == "Estudiante" %}
+          <span class="badge small" style="background:#1C2E4A;">
+            <i class="fas fa-user-graduate me-1 d-none d-sm-inline"></i>Estudiante
+          </span>
+
+        {% elif rol == "Acudiente" %}
+          <span class="badge small" style="background:#1C2E4A;">
+            <i class="fas fa-user-friends me-1 d-none d-sm-inline"></i>Acudiente
+          </span>
+
+        {% else %}
+          <span class="badge bg-secondary">{{ rol }}</span>
+        {% endif %}
+
+      {% endwith %}
+    </td>
+
+    <td class="text-center d-none d-xl-table-cell">
+      {% if usuario.estado %}
+        <span class="badge small" style="background:#28a745;">
+          <i class="fas fa-check me-1"></i>Activo
+        </span>
+      {% else %}
+        <span class="badge bg-secondary small">
+          <i class="fas fa-times me-1"></i>Inactivo
+        </span>
+      {% endif %}
+    </td>
+
+    <td class="text-center d-none d-sm-table-cell">
+      {% if usuario.img_usuario %}
+        <img src="{{ usuario.img_usuario.url }}"
+             alt=""
+             width="40"
+             style="border-radius:50%; object-fit:cover; height:40px; border:2px solid #dee2e6;">
+      {% else %}
+        <img src="{% static 'img/User.jpg' %}"
+             alt=""
+             width="40"
+             style="border-radius:50%; object-fit:cover; height:40px; border:2px solid #dee2e6;">
+      {% endif %}
+    </td>
+
+    {% if perms.app.view_usuario or perms.app.change_usuario or perms.app.delete_usuario %}
+    <td class="text-center">
+      <div class="d-flex justify-content-center gap-1 flex-wrap">
+
+        {% if perms.app.view_usuario %}
+        <button class="btn btn-sm btn-ver-usuario"
+                style="background-color: #000000; border-color: #000000; color: #ffffff;"
+                data-url="{% url 'app:detalle_usuario' usuario.id %}"
+                title="Ver detalles">
+          <i class="fas fa-eye"></i>
+        </button>
+        {% endif %}   
+
+        {% if perms.app.change_usuario %}
+        <a href="{% url 'app:editar_usuario' usuario.id %}"
+           class="btn btn-sm"
+           style="background-color:#3054f7; color:#fff; border-radius:8px;"
+           title="Editar">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </a>
+        {% endif %}
+
+        {% if perms.app.delete_usuario %}
+        <a href="{% url 'app:eliminar_usuario' usuario.id %}"
+           class="btn btn-sm"
+           style="background-color:#d3204a; color:white; border-radius:8px;"
+           title="Eliminar">
+          <i class="fa-solid fa-trash"></i>
+        </a>
+        {% endif %}
+
+        {% if perms.auth.change_permission %}
+        <a href="{% url 'app:gestionar_permisos' usuario.id %}"
+           class="btn btn-sm d-none d-lg-inline-block"
+           style="background-color:#004BDB  ; color:white; border-radius:8px;"
+           title="Gestionar permisos">
+          <i class="fas fa-key"></i>
+        </a>
+        {% endif %}
+        {% if request.user.get_rol == "Administrador" %}
+    {% if usuario.get_rol == "Estudiante" %}
+        {% with estudiante=usuario.estudiante %}
+            {% if estudiante.qr %}
+                <a href="{% url 'app:descargar_qr' estudiante.pk %}"
+                   class="btn btn-sm d-none d-lg-inline-block"
+                   style="background-color:#17a2b8; color:white; border-radius:8px;"
+                   title="Descargar código QR">
+                    <i class="fas fa-qrcode"></i>
+                </a>
+            {% endif %}
+        {% endwith %}
+    {% endif %}
+{% endif %}
+      </div>
+    </td>
+    {% endif %}
+
+  </tr>
+  {% empty %}
+  <tr>
+    <td colspan="{% if perms.app.view_usuario or perms.app.change_usuario or perms.app.delete_usuario %}7{% else %}6{% endif %}"
+        class="text-center text-muted py-4">
+      No hay usuarios registrados.
+    </td>
+  </tr>
+  {% endfor %}
+{% endblock %}
+
+{% block js %}
+<script>
+  document.querySelectorAll('.btn-ver-usuario').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const url = btn.dataset.url;
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          Swal.fire({
+            title: data.nombre,
+            icon: 'info',
+            html: `
+              <div class="text-start mt-2">
+                <div class="mb-2">
+                  <span class="fw-semibold text-muted">Email</span><br>
+                  <span>${data.email}</span>
+                </div>
+                <div class="mb-2">
+                  <span class="fw-semibold text-muted">Rol</span><br>
+                  <span class="badge bg-primary">${data.rol}</span>
+                </div>
+                <div class="mb-2">
+                  <span class="fw-semibold text-muted">Estado</span><br>
+                  <span class="badge bg-${data.estado === 'Activo' ? 'success' : 'secondary'}">
+                    ${data.estado}
+                  </span>
+                </div>
+                <div>
+                  <span class="fw-semibold text-muted">Fecha de creación</span><br>
+                  <span>${new Date(data.fecha_creacion).toLocaleString('es-CO')}</span>
+                </div>
+              </div>`,
+            showConfirmButton: true,
+            confirmButtonText: 'Cerrar',
+            customClass: { popup: 'swal-card', title: 'swal-title', confirmButton: 'btn btn-primary px-4' },
+            buttonsStyling: false
+          });
+        })
+        .catch(() => Swal.fire('Error', 'No se pudo cargar la información', 'error'));
+    });
+  });
+
+  $(document).ready(function () {
+    const tabla = $('#Tabla').DataTable();
+
+    document.getElementById('btn_filtrar').addEventListener('click', function () {
+      const buscar = document.getElementById('buscar').value;
+      const rol = document.getElementById('rol').value;
+      const estado = document.getElementById('estado').value;
+      const curso = document.getElementById('filtro_curso').value;
+
+      let url = window.location.pathname + '?';
+
+      if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+      if (rol) url += `rol=${encodeURIComponent(rol)}&`;
+      if (estado) url += `estado=${estado}&`;
+      if (curso) url += `curso=${curso}&`;
+
+      window.location.href = url;
+    });
+
+    const urlPdf   = "{% url 'app:reporte_usuario_pdf' %}";
+    const urlExcel = "{% url 'app:reporte_usuario_excel' %}";
+
+    document.getElementById("ExportarPdf").addEventListener("click", function(e) {
+      e.preventDefault();
+      const buscar = document.getElementById("buscar").value;
+      const rol    = document.getElementById("rol").value;
+      const estado = document.getElementById("estado").value;
+      const curso  = document.getElementById("filtro_curso").value;
+      window.location.href = `${urlPdf}?buscar=${encodeURIComponent(buscar)}&rol=${encodeURIComponent(rol)}&estado=${estado}&curso=${curso}`;
+    });
+
+    document.getElementById("ExportarExcel").addEventListener("click", function(e) {
+      e.preventDefault();
+      const buscar = document.getElementById("buscar").value;
+      const rol    = document.getElementById("rol").value;
+      const estado = document.getElementById("estado").value;
+      const curso  = document.getElementById("filtro_curso").value;
+      window.location.href = `${urlExcel}?buscar=${encodeURIComponent(buscar)}&rol=${encodeURIComponent(rol)}&estado=${estado}&curso=${curso}`;
+    });
+  });
+</script>
+{% endblock %}

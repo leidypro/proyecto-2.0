@@ -1,0 +1,254 @@
+{% extends 'body.html' %}
+{% load static %} 
+{% block main %}
+<div class="container-fluid mt-4">
+    <h2 class="mb-4 page-title p-3">
+        <i class="bi bi-database"></i> Respaldo y Restauración de BD
+    </h2>
+
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8">
+            <div class="card card-custom card-transparente border-{% if mysql_conectado %}success{% else %}danger{% endif %} shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        <i class="bi bi-{% if mysql_conectado %}check-circle-fill text-success{% else %}x-circle-fill text-danger{% endif %}"></i>
+                        Estado de Conexión MySQL
+                    </h5>
+                    <p class="card-text">
+                        {% if mysql_conectado %}
+                            <span class="text-success fw-bold">Conectado correctamente</span>
+                        {% else %}
+                            <span class="text-danger fw-bold">No se puede conectar a MySQL</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5 mb-4">
+            <div class="card card-custom card-transparente border-0 shadow {% if not mysql_conectado %}opacity-50{% endif %}">
+                <div class="card-header header-estilo-asistencias text-white">
+                    <h5 class="mb-0 text-center"><i class="bi bi-download"></i> Descargar Respaldo</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mb-3">Descarga un respaldo completo </p>
+                    <p class="small mb-4">Incluye todas las tablas y datos</p>
+                    {% if mysql_conectado %}
+                        <form method="post" action="{% url 'app:backup' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="accion" value="backup_completo">
+                            <button type="submit" class="btn btn-lg w-100 btn-descargar">
+                                <i class="bi bi-download me-2"></i> Descargar SQL
+                            </button>
+                        </form>
+                    {% else %}
+                        <button type="button" class="btn btn-secondary btn-lg w-100" disabled>
+                            <i class="bi bi-x-circle me-2"></i> MySQL No Conectado
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-5 mb-4">
+            <div class="card card-custom card-transparente border-0 shadow {% if not mysql_conectado %}opacity-50{% endif %}">
+                <div class="card-header header-estilo-asistencias text-white">
+                    <h5 class="mb-0 text-center"><i class="bi bi-upload"></i> Restaurar Base de Datos</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mb-3">Restaura la BD desde un archivo SQL</p>
+                    <p class="small text-danger mb-4"><strong>Cuidado:</strong> Esto sobrescribe todos los datos</p>
+                    {% if mysql_conectado %}
+                        <div id="zona-carga" class="drop-zone border-2 border-dashed p-4 text-center rounded-4" style="cursor: pointer;">
+                            <input type="file" id="archivo-respaldo" accept=".sql" style="display: none;">
+                            <i class="bi bi-cloud-upload text-success" style="font-size: 3rem;"></i>
+                            <p class="mb-0 mt-3 fw-bold">Arrastra un archivo .sql aquí</p>
+                            <p class="small text-muted mt-1">o haz clic para seleccionar</p>
+                        </div>
+                    {% else %}
+                        <div class="drop-zone border-2 border-dashed p-4 text-center rounded-4 bg-light">
+                            <i class="bi bi-x-circle text-secondary" style="font-size: 3rem;"></i>
+                            <p class="mb-0 mt-3 fw-bold text-muted">MySQL No Conectado</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8">
+            <div class="card card-custom card-transparente border-0 shadow">
+                <div class="card-header header-estilo-asistencias text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Información</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Requisitos:</h6>
+                            <ul class="small mb-0">
+                                <li>MySQL instalado localmente</li>
+                                <li>Usuario y contraseña configurados</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Archivos generados:</h6>
+                            <ul class="small mb-0">
+                                <li>backup_completo_...sql</li>
+                                <li>Estructura y datos completos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if mysql_conectado %}
+<script>
+    const zonaC = document.getElementById('zona-carga');
+    const archivoInput = document.getElementById('archivo-respaldo');
+
+    if (zonaC) {
+        // Clic para abrir explorador de archivos
+        zonaC.addEventListener('click', () => archivoInput.click());
+
+        // Efectos Visuales Drag and Drop
+        zonaC.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zonaC.style.backgroundColor = 'rgba(26, 42, 64, 0.1)';
+            zonaC.style.borderColor = '#1a2a40';
+        });
+
+        zonaC.addEventListener('dragleave', () => {
+            zonaC.style.backgroundColor = 'rgba(248, 250, 252, 0.5)';
+            zonaC.style.borderColor = '#cbd5e0';
+        });
+
+        zonaC.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zonaC.style.backgroundColor = 'rgba(248, 250, 252, 0.5)';
+            const archivos = e.dataTransfer.files;
+            if (archivos.length > 0) {
+                subirArchivo(archivos[0]);
+            }
+        });
+
+        // Cambio manual de archivo
+        archivoInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                subirArchivo(e.target.files[0]);
+            }
+        });
+    }
+
+    function subirArchivo(archivo) {
+        if (!archivo.name.endsWith('.sql')) {
+            alert('Por favor, selecciona un archivo SQL válido (.sql)');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('archivo', archivo);
+
+        // Estado de carga visual
+        const contenidoOriginal = zonaC.innerHTML;
+        zonaC.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary mb-2" role="status"></div>
+                <p class="mb-0 fw-bold">Restaurando base de datos...</p>
+                <p class="small text-muted">No cierres esta ventana</p>
+            </div>`;
+        zonaC.style.pointerEvents = 'none';
+
+        fetch('{% url "app:restaurar_datos" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.exito) {
+                alert('Éxito: ' + data.mensaje);
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+                zonaC.innerHTML = contenidoOriginal;
+                zonaC.style.pointerEvents = 'auto';
+            }
+        })
+        .catch(error => {
+            alert('Error en la conexión: ' + error);
+            zonaC.innerHTML = contenidoOriginal;
+            zonaC.style.pointerEvents = 'auto';
+        });
+    }
+</script>
+{% endif %}
+
+<style>
+/* TUS ESTILOS MANTENIDOS */
+.card-custom {
+    border-radius: 18px !important;
+    overflow: hidden;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.card-transparente {
+    background-color: rgba(255, 255, 255, 0.4) !important; 
+    backdrop-filter: blur(8px); 
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.header-estilo-asistencias {
+    background-color: #1a2a40 !important; 
+    color: #ffffff !important;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: 600;
+    padding: 18px !important;
+    border-radius: 18px 18px 0 0 !important;
+}
+
+.card-body {
+    padding: 25px;
+    background: transparent !important;
+}
+
+.drop-zone {
+    border: 2px dashed #cbd5e0;
+    border-radius: 15px;
+    background-color: rgba(248, 250, 252, 0.5); 
+    transition: all 0.3s ease;
+}
+
+.page-title {
+    background-color: #1a2a40 !important; 
+    font-weight: 700;
+    color: #ffffff;
+    border-radius: 10px;
+}
+
+.btn-descargar {
+    color: #1a2a40;
+    border-radius: 20px;
+    font-weight: 600;
+    border: 2px solid #1a2a40;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    background-color: rgb(255, 221, 228);
+    transition: all 0.3s ease;
+}
+
+.btn-descargar:hover {
+    background-color: #1a2a40;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

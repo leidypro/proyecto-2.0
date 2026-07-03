@@ -1,0 +1,13 @@
+{% extends 'create_generic.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% block breadcrumb_list %}Tipos de Elemento{% endblock %}
+{% block breadcrumb_active %}
+{% if object %}Editar Tipo de Elemento{% else %}Nuevo Tipo de Elemento{% endif %}
+{% endblock %}
+
+{% block titulo %}
+Crear Tipo de Elemento
+{% endblock %}
+
+

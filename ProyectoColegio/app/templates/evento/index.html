@@ -1,0 +1,162 @@
+{% extends 'list_generic.html' %}
+
+{% block titulo %}
+{{titulo}}
+{% endblock titulo %}
+
+{% block subtitulo %}
+{{subtitulo}}
+{% endblock subtitulo %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Eventos</li>
+{% endblock %}
+
+{% block columns %}
+    <th><i class="fas fa-hashtag me-2"></i>ID</th>
+    <th><i class="fas fa-book me-2"></i>Título</th>
+    <th><i class="fas fa-clock me-2"></i>Descripción</th>
+
+    {% if perms.app.change_evento or perms.app.delete_evento %}
+    <th class="text-center">
+        <i class="fas fa-tools me-2"></i>Acciones
+    </th>
+    {% endif %}
+{% endblock columns %}
+
+{% block exportar %}
+
+    {% if perms.app.view_evento %}
+    <a href="#" class="btn-pdf" id="ExportarPdf">
+        <i class="fas fa-file-pdf me-1"></i>
+        Descargar PDF
+    </a>
+
+    <a href="#" class="btn-excel" id="ExportarExcel">
+        <i class="fas fa-file-excel me-1"></i>
+        Descargar Excel
+    </a>
+    {% endif %}
+
+{% endblock %}
+
+{% block filtros_adicionales %}
+<div class="card card-custom mb-3 p-3 shadow-sm border-0 rounded-4" style="background: #f8f9fa;">
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <i class="fas fa-filter me-2 text-muted"></i>
+    <span class="fw-semibold text-muted small">Filtros:</span>
+    
+    <input type="text"
+           id="buscar"
+           name="buscar"
+           placeholder="Buscar evento..."
+           class="form-control form-control-sm"
+           style="min-width: 200px;"
+           value="{{ request.GET.buscar|default:'' }}">
+
+    <input type="date"
+           id="filtro_fecha"
+           name="fecha"
+           class="form-control form-control-sm"
+           style="min-width: 160px;"
+           value="{{ request.GET.fecha|default:'' }}">
+
+    <button type="button" id="btn_filtrar" class="btn btn-sm btn-primary">
+      <i class="fas fa-search me-1"></i> Filtrar
+    </button>
+
+    <a href="?" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-undo me-1"></i> Limpiar
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block rows %}
+    {% for evento in object_list %}
+    <tr>
+        <td>{{ evento.id }}</td>
+        <td>{{ evento.titulo }}</td>
+        <td>{{ evento.descripcion }}</td>
+
+        {% if perms.app.change_evento or perms.app.delete_evento %}
+        <td class="text-center">
+
+            {% if perms.app.change_evento %}
+            <a href="{% url 'app:editar_evento' evento.id %}"
+               class="btn btn-sm me-1"
+               style="background-color: #3054f7; color: #ffffff; border-radius: 8px;"
+               title="Editar">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </a>
+            {% endif %}
+
+            {% if perms.app.delete_evento %}
+            <a href="{% url 'app:eliminar_evento' evento.id %}"
+               class="btn btn-sm"
+               style="background-color: #ff4d4d; color: white; border-radius: 8px;"
+               title="Eliminar">
+                <i class="fa-solid fa-trash"></i>
+            </a>
+            {% endif %}
+
+        </td>
+        {% endif %}
+    </tr>
+
+    {% empty %}
+    <tr>
+        <td colspan="{% if perms.app.change_evento or perms.app.delete_evento %}4{% else %}3{% endif %}"
+            class="text-center text-muted py-4">
+            No hay eventos registrados.
+        </td>
+    </tr>
+    {% endfor %}
+{% endblock rows %}
+
+{% block js %}
+<script>
+  $(document).ready(function () {
+    const tabla = $('#Tabla').DataTable();
+
+    document.getElementById('btn_filtrar').addEventListener('click', function () {
+      const buscar = document.getElementById('buscar').value;
+      const fecha = document.getElementById('filtro_fecha').value;
+
+      let url = window.location.pathname + '?';
+
+      if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+      if (fecha) url += `fecha=${fecha}&`;
+
+      window.location.href = url;
+    });
+
+    const urlPdf = "{% url 'app:reporte_evento_pdf' %}";
+    const urlExcel = "{% url 'app:reporte_evento_excel' %}";
+
+    document.getElementById("ExportarPdf").addEventListener("click", function(e) {
+      e.preventDefault();
+      const buscar = document.getElementById("buscar").value;
+      const fecha = document.getElementById("filtro_fecha").value;
+      
+      let url = `${urlPdf}?`;
+      if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+      if (fecha) url += `fecha=${fecha}&`;
+      
+      window.location.href = url;
+    });
+
+    document.getElementById("ExportarExcel").addEventListener("click", function(e) {
+      e.preventDefault();
+      const buscar = document.getElementById("buscar").value;
+      const fecha = document.getElementById("filtro_fecha").value;
+      
+      let url = `${urlExcel}?`;
+      if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+      if (fecha) url += `fecha=${fecha}&`;
+      
+      window.location.href = url;
+    });
+  });
+</script>
+{% endblock %}

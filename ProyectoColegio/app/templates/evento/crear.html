@@ -1,0 +1,17 @@
+{% extends "create_generic.html" %}
+{% load static %}
+{% block breadcrumb_list %}Eventos{% endblock %}
+{% block breadcrumb_active %}
+{% if object %}Editar Evento{% else %}Nuevo Evento{% endif %}
+{% endblock %}
+
+{% block titulo %}
+{{titulo}}
+{% endblock titulo %}
+
+{% block url %}
+{{ listar_url }}
+{% endblock url %}
+{% block js %}
+<script src = "{% static 'Js/validaciones.js' %}"></script>
+{% endblock js %}

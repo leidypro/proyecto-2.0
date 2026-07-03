@@ -1,0 +1,52 @@
+{% extends 'create_generic.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% block breadcrumb_list %}Estudiante Acudiente{% endblock %}
+{% block breadcrumb_active %}
+{% if object %}Editar Relación{% else %}Nueva Relación{% endif %}
+{% endblock %}
+{% block titulo %}
+  {{ titulo }}
+{% endblock %}
+
+{% block form %}
+  {% csrf_token %}
+
+  <div class="row">
+
+    <div class="col-md-6 mb-4">
+      <label class="form-label fw-bold" style="color:#1C2E4A;">
+        <i class="fas fa-user-graduate me-1"></i> Estudiante
+      </label>
+      <select name="estudiante_id" class="form-control form-control-custom" required>
+        <option value="">— Seleccione un estudiante —</option>
+        {% for est in estudiantes %}
+          <option value="{{ est.usuario.pk }}">
+            {{ est.usuario.nombre }} — {{ est.usuario.email }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <label class="form-label fw-bold" style="color:#1C2E4A;">
+        <i class="fas fa-user-friends me-1"></i> Acudiente
+      </label>
+      <select name="acudiente_id" class="form-control form-control-custom" required>
+        <option value="">— Seleccione un acudiente —</option>
+        {% for acu in acudientes %}
+          <option value="{{ acu.usuario.pk }}">
+            {{ acu.usuario.nombre }} — {{ acu.usuario.email }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+  </div>
+
+  <div class="alert alert-info small py-2 px-3" style="border-radius:8px;">
+    <i class="fas fa-info-circle me-1"></i>
+    Un estudiante puede tener múltiples acudientes y un acudiente puede estar vinculado a varios estudiantes.
+  </div>
+
+{% endblock %}

@@ -1,0 +1,343 @@
+{% extends 'list_generic.html' %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block subtitulo %}{{ subtitulo }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Asistencia</li>
+{% endblock %}
+
+{% block extra_cards %}
+<!-- REGISTROS HOY -->
+<div class="col-12 col-sm-6 col-lg-3">
+    <div class="card card-stats h-100 shadow-sm border-0">
+        <div class="card-body d-flex flex-column justify-content-center py-3">
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div class="pe-2 flex-grow-1">
+                    <p class="text-muted mb-1 small fw-medium text-uppercase tracking-wider">
+                        Registros hoy
+                    </p>
+                    <h3 class="fw-bold mb-0 fs-2" style="color:#007bff;">
+                        {{ hoy_count|default:"0" }}
+                    </h3>
+                </div>
+
+                <div class="icon-wrapper bg-white bg-opacity-50 p-2 rounded-3">
+                    <i class="fa-solid fa-calendar-day fa-2x" style="color:#007bff;"></i>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INASISTENCIAS -->
+<div class="col-12 col-sm-6 col-lg-3">
+    <div class="card card-stats h-100 shadow-sm border-0">
+        <div class="card-body d-flex flex-column justify-content-center py-3">
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div class="pe-2 flex-grow-1">
+                    <p class="text-muted mb-1 small fw-medium text-uppercase tracking-wider">
+                        Inasistencias
+                    </p>
+                    <h3 class="fw-bold text-danger mb-0 fs-2">
+                        {{ inasistencias|default:"0" }}
+                    </h3>
+                </div>
+
+                <div class="icon-wrapper bg-white bg-opacity-50 p-2 rounded-3">
+                    <i class="fa-solid fa-user-times fa-2x text-danger"></i>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block exportar %}
+
+  {% if perms.app.view_asistencia %}
+  <a href="#" class="btn-pdf" id="ExportarPdf">
+    <i class="fas fa-file-pdf me-1"></i>
+    <span class="d-none d-sm-inline">Descargar</span> PDF
+  </a>
+  {% endif %}
+
+  {% if perms.app.add_asistencia %}
+  <a href="{% url 'app:Camara' %}" class="btn-pdf">
+    <i class="fas fa-camera me-1"></i>
+    <span class="d-none d-sm-inline">Cámara</span> QR
+  </a>
+  {% endif %}
+
+  {% if perms.app.view_asistencia %}
+  <a href="#" class="btn-excel" id="ExportarExcel">
+    <i class="fas fa-file-excel me-1"></i>
+    <span class="d-none d-sm-inline">Descargar</span> Excel
+  </a>
+  {% endif %}
+
+{% endblock %}
+
+{% block filtros_adicionales %}
+<div class="card card-custom mb-3 p-3 shadow-sm border-0 rounded-4" style="background: #f8f9fa;">
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <i class="fas fa-filter me-2 text-muted"></i>
+    <span class="fw-semibold text-muted small">Filtros:</span>
+    
+    <input type="text"
+           id="buscar"
+           name="buscar"
+           placeholder="Buscar por estudiante..."
+           class="form-control form-control-sm"
+           style="min-width: 200px;"
+           value="{{ request.GET.buscar|default:'' }}">
+
+    <input type="date"
+           id="filtro_fecha"
+           name="fecha"
+           class="form-control form-control-sm"
+           style="min-width: 160px;"
+           value="{{ request.GET.fecha|default:'' }}">
+
+    <select id="filtro_estado"
+            name="estado"
+            class="form-select form-select-sm"
+            style="min-width: 150px;">
+      <option value="">Todos los estados</option>
+      <option value="A tiempo" {% if request.GET.estado == 'A tiempo' %}selected{% endif %}>A tiempo</option>
+      <option value="Tarde" {% if request.GET.estado == 'Tarde' %}selected{% endif %}>Tarde</option>
+      <option value="Inasistencia" {% if request.GET.estado == 'Inasistencia' %}selected{% endif %}>Inasistencia</option>
+    </select>
+
+    <select id="filtro_curso"
+            name="curso"
+            class="form-select form-select-sm"
+            style="min-width: 180px;">
+      <option value="">Todos los cursos</option>
+      {% for curso in cursos %}
+      <option value="{{ curso.id }}" {% if request.GET.curso == curso.id|stringformat:"i" %}selected{% endif %}>
+        {{ curso.codigo}}
+      </option>
+      {% endfor %}
+    </select>
+
+    <button type="button" id="btn_filtrar" class="btn btn-sm btn-primary">
+      <i class="fas fa-search me-1"></i> Filtrar
+    </button>
+
+    <a href="?" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-undo me-1"></i> Limpiar
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block columns %}
+  <th class="d-none d-md-table-cell">
+    <i class="fas fa-hashtag me-2"></i>ID
+  </th>
+
+  <th>
+    <i class="fas fa-user-graduate me-2"></i>Estudiante
+  </th>
+
+  <th class="d-none d-lg-table-cell">
+    <i class="fas fa-calendar me-2"></i>Fecha
+  </th>
+
+  <th>
+    <i class="fas fa-clock me-2"></i>Hora
+  </th>
+
+  <th>
+    <i class="fas fa-tag me-2"></i>Estado
+  </th>
+
+  <th class="d-none d-xl-table-cell">
+    <i class="fas fa-comment me-2"></i>Observaciones
+  </th>
+
+  {% if perms.app.change_asistencia or perms.app.delete_asistencia %}
+  <th class="text-center">
+    <i class="fas fa-tools me-2"></i>
+    <span class="d-none d-md-inline">Acciones</span>
+  </th>
+  {% endif %}
+{% endblock %}
+
+{% block rows %}
+  {% for asistencia in object_list %}
+  <tr>
+
+    <td class="d-none d-md-table-cell">
+      {{ asistencia.id }}
+    </td>
+
+    <td>
+      {{ asistencia.estudianteid }}
+    </td>
+
+    <td class="d-none d-lg-table-cell">
+      {{ asistencia.fecha }}
+    </td>
+
+    <td>
+      {{ asistencia.horaentrada|time:"H:i" }}
+    </td>
+
+    <td>
+      {% if asistencia.estado == "A tiempo" %}
+        <span class="badge" style="background-color:#28a745;">
+          A tiempo
+        </span>
+
+      {% elif asistencia.estado == "Tarde" %}
+        <span class="badge" style="background-color:#ffc107; color:#000;">
+          Tarde
+        </span>
+
+      {% elif asistencia.estado == "Inasistencia" %}
+        <span class="badge" style="background-color:#dc3545;">
+          Inasistencia
+        </span>
+
+      {% else %}
+        <span class="badge bg-secondary">
+          {{ asistencia.estado }}
+        </span>
+      {% endif %}
+    </td>
+
+    <td class="d-none d-xl-table-cell">
+      {% if asistencia.observaciones %}
+        {{ asistencia.observaciones|truncatechars:40 }}
+      {% else %}
+        <span class="text-muted">—</span>
+      {% endif %}
+    </td>
+
+    {% if perms.app.change_asistencia or perms.app.delete_asistencia %}
+    <td class="text-center">
+      <div class="d-flex justify-content-center gap-1 flex-nowrap">
+
+        {% if perms.app.change_asistencia %}
+        <a href="{% url 'app:editar_asistencia' asistencia.id %}"
+           class="btn btn-sm"
+           style="background-color:#3054f7; color:#fff; border-radius:8px;"
+           title="Editar">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </a>
+        {% endif %}
+
+        {% if perms.app.delete_asistencia %}
+        <a href="{% url 'app:eliminar_asistencia' asistencia.id %}"
+           class="btn btn-sm"
+           style="background-color:#ff4d4d; color:white; border-radius:8px;"
+           title="Eliminar">
+          <i class="fa-solid fa-trash"></i>
+        </a>
+        {% endif %}
+
+      </div>
+    </td>
+    {% endif %}
+
+  </tr>
+  {% endfor %}
+{% endblock %}
+
+{% block js %}
+<script>
+$(document).ready(function () {
+
+  // =========================
+  // LIMITAR FECHA AL AÑO ACTUAL
+  // =========================
+  const fechaInput = document.getElementById('filtro_fecha');
+  const añoActual = new Date().getFullYear();
+  fechaInput.min = `${añoActual}-01-01`;
+  fechaInput.max = `${añoActual}-12-31`;
+
+  // =========================
+  // DATATABLE EN ESPAÑOL
+  // =========================
+  const tabla = $('#Tabla').DataTable({
+    language: {
+      url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
+    }
+  });
+
+  // =========================
+  // FILTRO GENERAL
+  // =========================
+  document.getElementById('btn_filtrar').addEventListener('click', function () {
+    const buscar = document.getElementById('buscar').value;
+    const fecha = document.getElementById('filtro_fecha').value;
+    const estado = document.getElementById('filtro_estado').value;
+    const curso = document.getElementById('filtro_curso').value;
+
+    let url = window.location.pathname + '?';
+
+    if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+    if (fecha) url += `fecha=${fecha}&`;
+    if (estado) url += `estado=${encodeURIComponent(estado)}&`;
+    if (curso) url += `curso=${curso}&`;
+
+    window.location.href = url;
+  });
+
+  // =========================
+  // URLS EXPORTACIÓN (DJANGO)
+  // =========================
+  const urlPdf = "{% url 'app:reporte_asistencia_pdf' %}";
+  const urlExcel = "{% url 'app:reporte_asistencia_excel' %}";
+
+  // =========================
+  // EXPORTAR PDF
+  // =========================
+  document.getElementById("ExportarPdf").addEventListener("click", function(e) {
+    e.preventDefault();
+
+    const buscar = document.getElementById("buscar").value;
+    const fecha = document.getElementById("filtro_fecha").value;
+    const estado = document.getElementById("filtro_estado").value;
+    const curso = document.getElementById("filtro_curso").value;
+
+    let url = `${urlPdf}?`;
+
+    if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+    if (fecha) url += `fecha=${fecha}&`;
+    if (estado) url += `estado=${encodeURIComponent(estado)}&`;
+    if (curso) url += `curso=${curso}&`;
+
+    window.location.href = url;
+  });
+
+  // =========================
+  // EXPORTAR EXCEL
+  // =========================
+  document.getElementById("ExportarExcel").addEventListener("click", function(e) {
+    e.preventDefault();
+
+    const buscar = document.getElementById("buscar").value;
+    const fecha = document.getElementById("filtro_fecha").value;
+    const estado = document.getElementById("filtro_estado").value;
+    const curso = document.getElementById("filtro_curso").value;
+
+    let url = `${urlExcel}?`;
+
+    if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+    if (fecha) url += `fecha=${fecha}&`;
+    if (estado) url += `estado=${encodeURIComponent(estado)}&`;
+    if (curso) url += `curso=${curso}&`;
+
+    window.location.href = url;
+  });
+
+});
+</script>
+{% endblock %}

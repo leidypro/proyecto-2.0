@@ -1,0 +1,242 @@
+<div class="modal-dialog modal-dialog-centered modal-san-nicolas">
+  <div class="modal-content" style="border-radius: 14px; overflow: hidden;">
+
+    <!-- HEADER -->
+    <div class="modal-header perfil-header">
+      <div>
+        <p class="perfil-header-sub">Bienvenido</p>
+        <h5 class="modal-title text-white">Mi Perfil</h5>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <!-- AVATAR -->
+    <div class="perfil-avatar-wrapper">
+      {% if user.img_usuario %}
+        <img src="{{ user.img_usuario.url }}" alt="Foto de perfil" class="perfil-avatar" />
+      {% else %}
+        <div class="perfil-avatar perfil-avatar-placeholder">
+          <span>{{ user.nombre|first|upper }}</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="modal-body pt-2">
+
+      <!-- NOMBRE CENTRADO -->
+      <div class="text-center mb-3 mt-2">
+        <p class="fw-500 mb-0" style="font-size: 15px;">{{ user.nombre }}</p>
+        <p class="text-muted mb-0" style="font-size: 12px;">{{ user.email }}</p>
+      </div>
+
+      <!-- TARJETAS INFO -->
+      <div class="perfil-grid mb-3">
+        <div class="perfil-card">
+          <span class="perfil-card-label">Usuario</span>
+          <span class="perfil-card-value">{{ user.email }}</span>
+        </div>
+        <div class="perfil-card">
+          <span class="perfil-card-label">Nombre</span>
+          <span class="perfil-card-value">{{ user.nombre }}</span>
+        </div>
+      </div>
+
+      <hr class="my-3">
+
+      <!-- FORMULARIO -->
+      <p class="perfil-section-title">Editar datos</p>
+      <form method="POST" action="{% url 'app:perfil' %}" id="formPerfil" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="mb-2">
+          <label class="form-label">Nombre</label>
+          <input type="text" name="nombre" class="form-control" value="{{ user.nombre }}" />
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">Foto de perfil</label>
+          <div class="perfil-upload-zone" onclick="document.getElementById('inputFoto').click()">
+            <p class="mb-0" style="font-size: 12px; color: #6c757d;">Subir nueva foto</p>
+            <input type="file" id="inputFoto" name="img_usuario" accept="image/*" style="display:none" />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Nueva contraseña</label>
+          <input type="password" name="password" class="form-control" placeholder="••••••••" id="password">
+		  <div id="errorBox" class="error-box"></div>
+        </div>
+
+        <div id="mensajePerfil" class="mb-2"></div>
+
+        <div class="modal-footer px-0 pb-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Actualizar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<style>
+  .modal-san-nicolas { max-width: 480px; }
+
+  .modal-san-nicolas .modal-content {
+    border: none;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  }
+
+  /* HEADER */
+  .perfil-header {
+    background-color: #0b3c5d;
+    border-bottom: 4px solid #c1121f;
+    padding: 1rem 1.5rem 3.8rem;
+    align-items: flex-start;
+  }
+
+  .perfil-header-sub {
+    color: rgba(255,255,255,0.55);
+    font-size: 11px;
+    margin: 0 0 2px;
+  }
+
+  .perfil-header .modal-title {
+    font-weight: 500;
+    font-size: 16px;
+  }
+
+  .perfil-header .btn-close {
+    filter: invert(1);
+    margin-top: 2px;
+  }
+
+  /* AVATAR */
+  .perfil-avatar-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: -44px;
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .perfil-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #ffffff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+
+  .perfil-avatar-placeholder {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #c1121f, #9f0f1a);
+    border: 4px solid #ffffff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .perfil-avatar-placeholder span {
+    color: white;
+    font-size: 1.8rem;
+    font-weight: 500;
+  }
+
+  /* TARJETAS INFO */
+  .perfil-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .perfil-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .perfil-card-label {
+    font-size: 11px;
+    color: #6c757d;
+    margin-bottom: 2px;
+  }
+
+  .perfil-card-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: #0b3c5d;
+  }
+
+  /* SECCIÓN TÍTULO */
+  .perfil-section-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  /* ZONA UPLOAD */
+  .perfil-upload-zone {
+    border: 1.5px dashed #ced4da;
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .perfil-upload-zone:hover {
+    border-color: #c1121f;
+  }
+
+  /* INPUTS */
+  .modal-san-nicolas input.form-control,
+  .modal-san-nicolas select.form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 0.55rem 0.75rem;
+    font-size: 13px;
+    transition: all 0.25s ease;
+  }
+
+  .modal-san-nicolas input.form-control:focus {
+    border-color: #c1121f;
+    box-shadow: 0 0 0 0.15rem rgba(193,18,31,0.2);
+  }
+
+  /* LABELS */
+  .modal-san-nicolas label.form-label {
+    color: #0b3c5d;
+    font-weight: 500;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  /* FOOTER BOTONES */
+  .modal-san-nicolas .btn-secondary {
+    background-color: #e5e7eb;
+    border: none;
+    color: #374151;
+    border-radius: 8px;
+  }
+
+  .modal-san-nicolas .btn-secondary:hover { background-color: #d1d5db; }
+
+  .modal-san-nicolas .btn-primary {
+    background-color: #c1121f;
+    border: none;
+    border-radius: 8px;
+    padding: 0.45rem 1.5rem;
+    font-weight: 500;
+  }
+
+  .modal-san-nicolas .btn-primary:hover { background-color: #9f0f1a; }
+</style>

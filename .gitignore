@@ -1,0 +1,59 @@
+# =====================
+# Entorno virtual
+# =====================
+.venv/
+venv/
+env/
+
+# =====================
+# Python
+# =====================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =====================
+# Logs
+# =====================
+*.log
+
+# =====================
+# Base de datos
+# =====================
+*.sqlite3
+
+# =====================
+# Django media (archivos subidos por usuarios)
+# =====================
+media/
+
+# =====================
+# Archivos sensibles
+# =====================
+.env
+token.json
+credentials.json
+
+# =====================
+# IDEs
+# =====================
+.vscode/
+.idea/
+
+# =====================
+# Archivos del sistema
+# =====================
+.DS_Store
+
+# =====================
+# Archivos generados por el sistema
+# =====================
+staticfiles/
+
+# =====================
+# Opcional (solo si trabajas solo)
+# =====================
+# migrations/__pycache__/
+# *.pyc
+
+**/img/**

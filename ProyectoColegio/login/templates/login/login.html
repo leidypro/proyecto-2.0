@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | Colegio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}" />
+  </head>
+  <style>
+    .oculto {
+      display: none;
+    }
+    
+    .mostrar {
+      display: block;
+    }
+    
+    .error {
+      color: red;
+    }
+    
+    .correcto {
+      color: green;
+    }
+  </style>
+  <body>
+    <div class="login">
+      <div class="aside">
+        <h1>Iniciar sesión</h1>
+      </div>
+
+      <form action="" method="post">
+        {% csrf_token %}
+
+        <!-- Logo -->
+        <div class="logo-container">
+          <img src="{% static 'img/Logo.jpeg' %}" alt="Logo institucional" class="logo" />
+        </div>
+
+        <!-- Campos -->
+        {% for field in form %}
+          <div class="input-container">
+            <!-- Ícono -->
+            {% if 'password' in field.name %}
+              <i class="fa-solid fa-lock" id="lock"></i>
+
+              <div id="reglas" class="error-message">
+                <div id="mayuscula" style="display:none">Debe tener una mayúscula</div>
+                <div id="minuscula" style="display:none">Debe tener una minúscula</div>
+                <div id="numero" style="display:none">Debe tener un número</div>
+                <div id="simbolo" style="display:none">Debe tener un símbolo</div>
+                <div id="longitud" style="display:none">Debe tener mínimo 8 caracteres</div>
+              </div>
+            {% else %}
+              <i class="fa-solid fa-user" id="user"></i>
+            {% endif %}
+
+            <!-- Label -->
+            <label for="{{ field.id_for_label }}">
+                  {% if field.name == 'username' %}
+                    Correo electrónico
+                  {% else %}
+                   {{ field.label }}
+                   
+                  {% endif %}
+            </label>
+
+            <!-- Input -->
+            {{ field }}
+
+            <!-- Mostrar errores de Django -->
+            {% if field.errors %}
+              <span class="error-message">{{ field.errors|striptags }}</span>
+            {% else %}
+              <span class="error-message" id="{{ field.name }}-error"></span>
+            {% endif %}
+
+            <!-- Ver contraseña -->
+            {% if 'password' in field.name %}
+              <i class="fa fa-eye toggle-password" id="eye"></i>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <!-- Botón login -->
+        <button type="submit" class="btn-login" id="">Ingresar</button>
+
+        <!-- Separador -->
+        <div class="separator">O</div>
+
+        <!-- Recuperar contraseña -->
+        <a type="button" class="btn-recuperar" href = "{% url 'login:reset_password' %}">¿Olvidaste tu contraseña?</a>
+      </form>
+    </div>
+    <script src="{% static 'lib/sweetalert2/sweetalert2.all.min.js' %}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        {% if form.errors %}
+            let errorMessages = "";
+            
+            {% for field in form %}
+                {% for error in field.errors %}
+                    errorMessages += "{{ error|escapejs }}\n";
+                {% endfor %}
+            {% endfor %}
+
+            {% for error in form.non_field_errors %}
+                errorMessages += "{{ error|escapejs }}\n";
+            {% endfor %}
+            console.log(errorMessages)
+            if (errorMessages !== "") {
+                Swal.fire({
+                    title: 'Error de acceso',
+                    text: errorMessages,
+                    icon: 'error',
+                    confirmButtonColor: '#1C2E4A',
+                    heightAuto: false, // CLAVE: evita que el body cambie de tamaño
+                    customClass: {
+                        popup: 'border-radius-40'
+                    }
+                });
+            }
+        {% endif %}
+    });
+</script>
+    <script src="{% static 'Js/password.js' %}"></script>
+  </body>
+</html>

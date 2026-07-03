@@ -1,0 +1,96 @@
+name: Integración Continua
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    env:
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+      EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+      KEY_PASSWORD_IA: ${{ secrets.KEY_PASSWORD_IA }}
+
+    steps:
+
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias del sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            gcc \
+            pkg-config \
+            python3-dev \
+            default-libmysqlclient-dev \
+            mysql-client \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libharfbuzz-dev \
+            libharfbuzz-subset0 \
+            libgdk-pixbuf-2.0-dev \
+            libffi-dev \
+            shared-mime-info
+
+      - name: Instalar dependencias de Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ver estructura del proyecto
+        working-directory: ProyectoColegio
+        run: |
+          echo "=== Directorio actual ==="
+          pwd
+          echo ""
+          echo "=== Archivos ==="
+          ls -la
+          echo ""
+          echo "=== Carpeta app ==="
+          ls -la app
+          echo ""
+          echo "=== Migraciones ==="
+          ls -la app/migrations
+
+      - name: Ver apps instaladas
+        working-directory: ProyectoColegio
+        run: |
+          python manage.py shell -c "from django.conf import settings; print('INSTALLED_APPS:'); print(settings.INSTALLED_APPS)"
+
+      - name: Ver migraciones detectadas
+        working-directory: ProyectoColegio
+        run: |
+          python manage.py showmigrations
+
+      - name: Verificar modelo de usuario
+        working-directory: ProyectoColegio
+        run: |
+          python manage.py shell -c "from django.conf import settings; print('AUTH_USER_MODEL =', settings.AUTH_USER_MODEL)"
+
+      - name: Ejecutar migraciones
+        working-directory: ProyectoColegio
+        run: |
+          python manage.py migrate --verbosity 3
+
+      - name: Ejecutar pruebas
+        working-directory: ProyectoColegio
+        run: |
+          python manage.py test

@@ -1,0 +1,58 @@
+{% extends 'list_generic.html' %}
+{% load static %}
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Estudiante Acudiente</li>
+{% endblock %}
+{% block titulo %}
+  {{ titulo }}
+{% endblock titulo %}
+
+{% block subtitulo %}
+  {{ subtitulo }}
+{% endblock subtitulo %}
+
+{% block columns %}
+  <th><i class="fas fa-hashtag me-2"></i>ID</th>
+  <th><i class="fas fa-user-graduate me-2"></i>Estudiante</th>
+  <th><i class="fas fa-envelope me-2"></i>Email Estudiante</th>
+  <th><i class="fas fa-user-friends me-2"></i>Acudiente</th>
+  <th><i class="fas fa-envelope me-2"></i>Email Acudiente</th>
+
+  {% if perms.app.delete_estudianteacudiente %}
+  <th class="text-center">
+    <i class="fas fa-tools me-2"></i>Acciones
+  </th>
+  {% endif %}
+{% endblock columns %}
+
+{% block rows %}
+  {% for rel in relaciones %}
+  <tr>
+    <td>{{ rel.id }}</td>
+    <td>{{ rel.estudianteId.usuario.nombre }}</td>
+    <td>{{ rel.estudianteId.usuario.email }}</td>
+    <td>{{ rel.acudienteId.usuario.nombre }}</td>
+    <td>{{ rel.acudienteId.usuario.email }}</td>
+
+    {% if perms.app.delete_estudianteacudiente %}
+    <td class="text-center">
+      <a href="{% url 'app:eliminar_relacion' rel.pk %}"
+         class="btn btn-sm"
+         style="background-color: #ff4d4d; color: white; border-radius: 8px;"
+         title="Eliminar vínculo">
+        <i class="fa-solid fa-trash"></i>
+      </a>
+    </td>
+    {% endif %}
+  </tr>
+
+  {% empty %}
+  <tr>
+    <td colspan="{% if perms.app.delete_estudianteacudiente %}6{% else %}5{% endif %}"
+        class="text-center text-muted py-4">
+      <i class="fas fa-info-circle me-1"></i>
+      No hay relaciones registradas.
+    </td>
+  </tr>
+  {% endfor %}
+{% endblock rows %}

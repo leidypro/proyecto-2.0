@@ -1,0 +1,413 @@
+{% extends 'body.html' %}
+{% load static %}
+
+{% block main %}
+<script src='{% static "Js/apexcharts.js" %}'></script>
+
+<div class="container-fluid mt-4">
+
+  <!-- CABECERA -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <h4 class="fw-bold mb-0">Bienvenido, {{ usuario_nombre }}</h4>
+      <p class="text-muted small mb-0">
+        <span class="badge me-1"
+              style="background:{% if usuario_rol == 'Administrador' %}#a10000{% elif usuario_rol == 'Docente' %}#28a745{% else %}#1C2E4A{% endif %};">
+          {{ usuario_rol }}
+        </span>
+        {{ "now"|date:"l, d \d\e F \d\e Y" }}
+      </p>
+    </div>
+  </div>
+  <div class="row mb-4">
+
+    {% if usuario_rol == 'Administrador' %}
+
+      <div class="col-12 col-sm-6 col-lg-3 mb-3">
+        <a href="{% url 'app:index_usuario' %}" class="text-decoration-none">
+          <div class="card border-0 shadow-sm h-100" style="border-left:4px solid;">
+            <div class="card-body d-flex justify-content-between align-items-center p-3">
+              <div>
+                <p class="text-muted small mb-0">Total Usuarios</p>
+                <h3 class="fw-bold mb-0">{{ stat_usuarios|default:"0" }}</h3>
+              </div>
+              <i class="fa-solid fa-users fa-2x d-none d-sm-block"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3 mb-3">
+        <a href="{% url 'app:index_curso' %}" class="text-decoration-none">
+          <div class="card border-0 shadow-sm h-100" style="border-left:4px";>
+            <div class="card-body d-flex justify-content-between align-items-center p-3">
+              <div>
+                <p class="text-muted small mb-0">Estudiantes</p>
+                <h3 class="fw-bold mb-0">{{ stat_estudiantes|default:"0" }}</h3>
+              </div>
+              <i class="fa-solid fa-user-graduate fa-2x d-none d-sm-block" style="color:#1C2E4A; opacity:.7;"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3 mb-3">
+        <a href="{% url 'app:index_asistencia' %}" class="text-decoration-none">
+          <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #0d6efd !important;">
+            <div class="card-body d-flex justify-content-between align-items-center p-3">
+              <div>
+                <p class="text-muted small mb-0">Asistencias hoy</p>
+                <h3 class="fw-bold mb-0">{{ stat_asistencias_hoy|default:"0" }}</h3>
+              </div>
+              <i class="fa-solid fa-calendar-check fa-2x d-none d-sm-block" style="color:#0d6efd; opacity:.7;"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3 mb-3">
+        <a href="{% url 'app:index_inventario' %}?bajo_stock=1" class="text-decoration-none">
+          <div class="card border-0 shadow-sm h-100"
+               style="border-left:4px solid {% if stat_stock_bajo > 0 %}#dc3545{% else %}#0d6efd{% endif %} !important;">
+            <div class="card-body d-flex justify-content-between align-items-center p-3">
+              <div>
+                <p class="text-muted small mb-0">Stock bajo</p>
+                <h3 class="fw-bold mb-0 {% if stat_stock_bajo > 0 %}text-danger{% else %}text-success{% endif %}">
+                  {{ stat_stock_bajo|default:"0" }}
+                </h3>
+              </div>
+              <i class="fa-solid fa-exclamation-triangle fa-2x d-none d-sm-block"
+                 style="color:{% if stat_stock_bajo > 0 %}#dc3545{% else %}#a10000{% endif %}; opacity:.7;"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+
+    {% elif usuario_rol == 'Docente' %}
+
+      <div class="col-12 col-sm-6 col-lg-3 mb-3">
+        <a href="{% url 'app:index_curso' %}" class="text-decoration-none">
+          <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #1C2E4A !important;">
+            <div class="card-body d-flex justify-content-between align-items-center p-3">
+              <div>
+                <p class="text-muted small mb-0">Mis cursos</p>
+                <h3 class="fw-bold mb-0">{{ stat_cursos|default:"0" }}</h3>
+              </div>
+              <i class="fa-solid fa-graduation-cap fa-2x d-none d-sm-block" style="color:#1C2E4A; opacity:.7;"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3 mb-3">
+        <a href="{% url 'app:index_curso' %}" class="text-decoration-none">
+          <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #28a745 !important;">
+            <div class="card-body d-flex justify-content-between align-items-center p-3">
+              <div>
+                <p class="text-muted small mb-0">Mis estudiantes</p>
+                <h3 class="fw-bold mb-0">{{ stat_estudiantes|default:"0" }}</h3>
+              </div>
+              <i class="fa-solid fa-user-graduate fa-2x d-none d-sm-block" style="color:#28a745; opacity:.7;"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3 mb-3">
+        <a href="{% url 'app:index_asistencia' %}" class="text-decoration-none">
+          <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #0d6efd !important;">
+            <div class="card-body d-flex justify-content-between align-items-center p-3">
+              <div>
+                <p class="text-muted small mb-0">Asistencias hoy</p>
+                <h3 class="fw-bold mb-0">{{ stat_asistencias_hoy|default:"0" }}</h3>
+              </div>
+              <i class="fa-solid fa-calendar-check fa-2x d-none d-sm-block" style="color:#0d6efd; opacity:.7;"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3 mb-3">
+        <a href="{% url 'app:index_asistencia' %}" class="text-decoration-none">
+          <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #ffc107 !important;">
+            <div class="card-body d-flex justify-content-between align-items-center p-3">
+              <div>
+                <p class="text-muted small mb-0">Tardanzas hoy</p>
+                <h3 class="fw-bold mb-0 {% if stat_tardanzas_hoy > 0 %}text-warning{% endif %}">
+                  {{ stat_tardanzas_hoy|default:"0" }}
+                </h3>
+              </div>
+              <i class="fa-solid fa-clock fa-2x d-none d-sm-block" style="color:#ffc107; opacity:.7;"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+
+    {% endif %}
+  </div>
+
+<div class="row mb-4">
+    <div class="col-12 mb-2">
+      <h5 class="fw-bold">Accesos rápidos</h5>
+    </div>
+
+    {% if usuario_rol == 'Administrador' %}
+      
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
+        <a href="{% url 'app:index_usuario' %}" class="text-decoration-none text-dark">
+          <div class="card dashboard-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-3 py-md-4">
+              <i class="fa-solid fa-users dashboard-icon" style="color:#007bff;"></i>
+              <h6 class="fw-bold mt-2 mb-1 small">Usuarios</h6>
+              <p class="text-muted small mb-0 d-none d-md-block">Gestionar usuarios</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
+        <a href="{% url 'app:index_asistencia' %}" class="text-decoration-none text-dark">
+          <div class="card dashboard-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-3 py-md-4">
+              <i class="fa-solid fa-calendar-check dashboard-icon" style="color:#007bff;"></i>
+              <h6 class="fw-bold mt-2 mb-1 small">Asistencia</h6>
+              <p class="text-muted small mb-0 d-none d-md-block">Registrar y ver asistencias</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
+        <a href="{% url 'app:index_curso' %}" class="text-decoration-none text-dark">
+          <div class="card dashboard-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-3 py-md-4">
+              <i class="fa-solid fa-graduation-cap dashboard-icon" style="color:#007bff;"></i>
+              <h6 class="fw-bold mt-2 mb-1 small">Cursos</h6>
+              <p class="text-muted small mb-0 d-none d-md-block">Gestionar cursos</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
+        <a href="{% url 'app:index_inventario' %}" class="text-decoration-none text-dark">
+          <div class="card dashboard-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-3 py-md-4">
+              <i class="fa-solid fa-boxes-stacked dashboard-icon" style="color:#a10000;"></i>
+              <h6 class="fw-bold mt-2 mb-1 small">Inventario</h6>
+              <p class="text-muted small mb-0 d-none d-md-block">Gestión de elementos</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
+        <a href="{% url 'app:index_movimiento' %}" class="text-decoration-none text-dark">
+          <div class="card dashboard-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-3 py-md-4">
+              <i class="fa-solid fa-exchange-alt dashboard-icon" style="color:#a10000;"></i>
+              <h6 class="fw-bold mt-2 mb-1 small">Movimientos</h6>
+              <p class="text-muted small mb-0 d-none d-md-block">Entradas y salidas</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
+        <a href="{% url 'app:index_evento' %}" class="text-decoration-none text-dark">
+          <div class="card dashboard-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-3 py-md-4">
+              <i class="fa-regular fa-calendar dashboard-icon" style="color:#a10000;"></i>
+              <h6 class="fw-bold mt-2 mb-1 small">Eventos</h6>
+              <p class="text-muted small mb-0 d-none d-md-block">Calendario de actividades</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
+        <a href="{% url 'app:index_relacion' %}" class="text-decoration-none text-dark">
+          <div class="card dashboard-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-3 py-md-4">
+              <i class="fa-solid fa-user-group dashboard-icon" style="color:#1D2D44;"></i>
+              <h6 class="fw-bold mt-2 mb-1 small">Est. — Acud.</h6>
+              <p class="text-muted small mb-0 d-none d-md-block">Gestionar vínculos</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
+        <a href="{% url 'app:index_notificacion' %}" class="text-decoration-none text-dark">
+          <div class="card dashboard-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-3 py-md-4">
+              <i class="fa-solid fa-bell dashboard-icon" style="color:#1D2D44;"></i>
+              <h6 class="fw-bold mt-2 mb-1 small">Notificaciones</h6>
+              {% if stat_notificaciones > 0 %}
+                <span class="badge bg-danger small">{{ stat_notificaciones }}</span>
+              {% else %}
+                <p class="text-muted small mb-0 d-none d-md-block">Sin pendientes</p>
+              {% endif %}
+            </div>
+          </div>
+        </a>
+      </div>
+
+    {% elif usuario_rol == 'Docente' %}
+
+      <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-3">
+        <a href="{% url 'app:index_curso' %}" class="text-decoration-none text-dark">
+          <div class="card dashboard-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-3 py-md-4">
+              <i class="fa-solid fa-layer-group dashboard-icon text-success"></i>
+              <h6 class="fw-bold mt-2 mb-1">Mis cursos</h6>
+              <p class="text-muted small mb-0 d-none d-md-block">Ver mis estudiantes</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-3">
+        <a href="{% url 'app:index_asistencia' %}" class="text-decoration-none text-dark">
+          <div class="card dashboard-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-3 py-md-4">
+              <i class="fa-solid fa-calendar-check dashboard-icon text-primary"></i>
+              <h6 class="fw-bold mt-2 mb-1">Asistencia</h6>
+              <p class="text-muted small mb-0 d-none d-md-block">Tomar y revisar asistencia</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-3">
+        <a href="{% url 'app:index_evento' %}" class="text-decoration-none text-dark">
+          <div class="card dashboard-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-3 py-md-4">
+              <i class="fa-regular fa-calendar dashboard-icon text-warning"></i>
+              <h6 class="fw-bold mt-2 mb-1">Eventos</h6>
+              <p class="text-muted small mb-0 d-none d-md-block">Ver calendario</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  
+
+  <!-- ======= GRÁFICAS ======= -->
+  <hr class="my-3">
+  <div class="row">
+    <div class="col-12 mb-2">
+      <h5 class="fw-bold">Indicadores</h5>
+    </div>
+
+    <div class="col-12 col-lg-6 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3">
+            <i class="fa-solid fa-calendar-check text-primary me-2"></i>
+            Asistencias — últimos 7 días
+          </h6>
+          <div id="graficaAsistencias"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3">
+            <i class="fa-solid fa-boxes-stacked text-success me-2"></i>
+            Stock por categoría
+          </h6>
+          <div id="graficaInventario"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALENDARIO -->
+    <div class="col-12 mb-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-2 p-md-3">
+          <h6 class="fw-bold mb-3">
+            <i class="fa-regular fa-calendar me-2" style="color:#e91e63;"></i>
+            Calendario de Eventos
+          </h6>
+          <div id="calendar"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src='{% static "Js/index.global.min.js" %}'></script>
+<script src='{% static "Js/indexgray.global.min.js" %}'></script>
+<script src='{% static "Js/indexfull.global.min.js" %}'></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      locale: 'es',
+      height: 'auto',
+      headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+      eventDisplay: 'block',
+      displayEventTime: false,
+      events: function (info, successCallback, failureCallback) {
+        fetch('/colegio/evento/calendario')
+          .then(res => res.json())
+          .then(data => {
+            const eventos = data.eventos.map(e => ({
+              title: e.titulo,
+              start: e.inicio,
+              end: e.fin,
+              description: e.descripcion,
+              backgroundColor: '#1C2E4A',
+              borderColor: '#031a31',
+              allDay: false
+            }));
+            successCallback(eventos);
+          });
+      },
+      eventDidMount: function (info) {
+        info.el.title = info.event.extendedProps.description;
+      },
+      eventContent: function (arg) {
+        return {
+          html: `<div style="padding:2px 4px;"><strong>${arg.event.title}</strong><br>
+                 <small>${arg.event.extendedProps.description || ''}</small></div>`
+        };
+      }
+    });
+    calendar.render();
+  });
+  console.log("labels:", {{ labels|safe }});
+console.log("data:", {{ data|safe }});
+console.log("labels_elemento:", {{ labels_elemento|safe }});
+console.log("datos_elemento:", {{ datos_elemento|safe }});
+  new ApexCharts(document.querySelector('#graficaAsistencias'), {
+    chart: { type: 'area', height: 230, toolbar: { show: false }, sparkline: { enabled: false } },
+    series: [{ name: 'Asistencias', data: {{ data|safe }} }],
+    xaxis: { categories: {{ labels|safe }} },
+    stroke: { curve: 'smooth', width: 2 },
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
+    colors: ['#0d6efd'],
+    dataLabels: { enabled: false },
+    tooltip: { theme: 'light' }
+  }).render();
+
+  new ApexCharts(document.querySelector('#graficaInventario'), {
+    chart: { type: 'bar', height: 230, toolbar: { show: false } },
+    series: [{ name: 'Stock', data: {{ datos_elemento|safe }} }],
+    xaxis: { categories: {{ labels_elemento|safe }} },
+    colors: ['#0051ff'],
+    dataLabels: { enabled: false },
+    plotOptions: { bar: { borderRadius: 6, columnWidth: '50%' } },
+    tooltip: { theme: 'light' }
+  }).render();
+</script>
+
+{% endblock %}

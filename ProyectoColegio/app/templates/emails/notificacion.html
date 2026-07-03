@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="margin:0; padding:0; background-color:#edeeeb; font-family: 'Segoe UI', Arial, sans-serif;">
+
+    <div style="max-width:600px; margin:40px auto; background-color:#edeeeb; padding:20px;">
+
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="{% static "img/Logo.jpeg" %}" alt="Escudo del Colegio" style="max-width: 150px; height: auto;">
+            
+            <p style="color:#1c2e4a; font-size: 14px; font-style: italic; margin: 10px 0 0 0;">
+                Formando Líderes que dejan Huella
+            </p>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #444444; margin-bottom: 30px;">
+
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color:#1c2e4a; font-size: 21px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
+                {{ titulo }}
+            </h1>
+        </div>
+
+        <div style="padding: 0 10px; color:#444444;">
+            <p style="font-size:16px; margin-bottom: 20px;">
+                Hola <strong>{{ nombre }}</strong>,
+            </p>
+
+            <p style="font-size:15px; line-height: 1.6; margin-bottom: 30px;">
+                {{ mensaje }}
+            </p>
+        </div>
+
+        <div style="text-align:center; margin:40px 0;">
+            <a href="{{ enlace }}" 
+            style="background-color:#1c2e4a; color:#edeeeb; padding: 15px 35px; text-decoration:none; border-radius:4px; font-weight:bold; font-size: 16px; display: inline-block; text-transform: uppercase;">
+                IR AL SISTEMA
+            </a>
+        </div>
+
+        <div style="margin-top: 50px; border-top: 1px solid #444444; padding-top: 20px;">
+            <p style="font-size:12px; color:#444444; text-align:center; font-style: italic;">
+                Este es un mensaje automático, por favor no responder.
+            </p>
+        </div>
+
+    </div>
+
+</body>
+</html>

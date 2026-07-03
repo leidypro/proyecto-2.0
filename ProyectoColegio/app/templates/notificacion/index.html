@@ -1,0 +1,133 @@
+{% extends 'list_generic.html' %}
+
+{% block titulo %}
+{{titulo}}
+{% endblock titulo %}
+
+{% block subtitulo %}
+{{subtitulo}}
+{% endblock subtitulo %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Notificaciones</li>
+{% endblock %}
+
+
+{% block filtros_adicionales %}
+<div class="card card-custom mb-3 p-3 shadow-sm border-0 rounded-4" style="background: #f8f9fa;">
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <i class="fas fa-filter me-2 text-muted"></i>
+    <span class="fw-semibold text-muted small">Filtros:</span>
+    
+    <input type="text"
+           id="buscar"
+           name="buscar"
+           placeholder="Buscar por título o mensaje..."
+           class="form-control form-control-sm"
+           style="min-width: 250px;"
+           value="{{ request.GET.buscar|default:'' }}">
+
+    <select id="filtro_estado"
+            name="estado"
+            class="form-select form-select-sm"
+            style="min-width: 150px;">
+      <option value="">Todos los estados</option>
+      <option value="no_leida" {% if request.GET.estado == 'no_leida' %}selected{% endif %}>No leída</option>
+      <option value="leida" {% if request.GET.estado == 'leida' %}selected{% endif %}>Leída</option>
+    </select>
+
+    <select id="filtro_tipo"
+            name="tipo"
+            class="form-select form-select-sm"
+            style="min-width: 150px;">
+      <option value="">Todos los tipos</option>
+      <option value="urgente" {% if request.GET.tipo == 'urgente' %}selected{% endif %}>Urgente</option>
+      <option value="normal" {% if request.GET.tipo == 'normal' %}selected{% endif %}>Normal</option>
+    </select>
+
+    <button type="button" id="btn_filtrar" class="btn btn-sm btn-primary">
+      <i class="fas fa-search me-1"></i> Filtrar
+    </button>
+
+    <a href="?" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-undo me-1"></i> Limpiar
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block columns %}
+    <th><i class="fas fa-hashtag me-2"></i>ID</th>
+    <th><i class="fas fa-book me-2"></i>Título</th>
+    <th><i class="fas fa-clock me-2"></i>Mensaje</th>
+
+    {% if perms.app.change_notificacion or perms.app.delete_notificacion %}
+    <th class="text-center">
+        <i class="fas fa-tools me-2"></i>Acciones
+    </th>
+    {% endif %}
+{% endblock columns %}
+
+{% block rows %}
+    {% for notificacion in object_list %}
+    <tr>
+        <td>{{ notificacion.id }}</td>
+        <td>{{ notificacion.titulo }}</td>
+        <td>{{ notificacion.mensaje }}</td>
+
+        {% if perms.app.change_notificacion or perms.app.delete_notificacion %}
+        <td class="text-center">
+
+            {% if perms.app.change_notificacion %}
+            <a href="{% url 'app:editar_notificacion' notificacion.id %}"
+               class="btn btn-sm me-1"
+               style="background-color: #3054f7; color: #ffffff; border-radius: 8px;"
+               title="Editar">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </a>
+            {% endif %}
+
+            {% if perms.app.delete_notificacion %}
+            <a href="{% url 'app:eliminar_notificacion' notificacion.id %}"
+               class="btn btn-sm"
+               style="background-color: #ff4d4d; color: white; border-radius: 8px;"
+               title="Eliminar">
+                <i class="fa-solid fa-trash"></i>
+            </a>
+            {% endif %}
+
+        </td>
+        {% endif %}
+    </tr>
+
+    {% empty %}
+    <tr>
+        <td colspan="{% if perms.app.change_notificacion or perms.app.delete_notificacion %}4{% else %}3{% endif %}"
+            class="text-center text-muted py-4">
+            No hay notificaciones registradas.
+        </td>
+    </tr>
+    {% endfor %}
+{% endblock rows %}
+
+{% block js %}
+<script>
+  $(document).ready(function () {
+    const tabla = $('#Tabla').DataTable();
+
+    document.getElementById('btn_filtrar').addEventListener('click', function () {
+      const buscar = document.getElementById('buscar').value;
+      const estado = document.getElementById('filtro_estado').value;
+      const tipo = document.getElementById('filtro_tipo').value;
+
+      let url = window.location.pathname + '?';
+
+      if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+      if (estado) url += `estado=${estado}&`;
+      if (tipo) url += `tipo=${tipo}&`;
+
+      window.location.href = url;
+    });
+  });
+</script>
+{% endblock %}

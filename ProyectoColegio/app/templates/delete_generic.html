@@ -1,0 +1,63 @@
+{% extends 'body.html' %}
+
+{% block main %}
+  <div class="container mt-5">
+    <div class="card card-pastel shadow-sm col-md-8 mx-auto">
+      <div class="card-header card-header-pastel text-center">
+        <h3 class="card-title mb-0"><i class="fas fa-trash-restore-alt"></i> {{ titulo|default:'Confirmar Eliminación' }}</h3>
+      </div>
+      <div class="card-body p-4 text-center">
+        <p class="lead" style="color: var(--text-color);">¿Estás seguro de que deseas eliminar este registro?</p>
+
+        <div class="alert reference-box my-4">
+          <strong>Referencia:</strong> {{ object }}
+        </div>
+
+        <p class="text-muted small">
+          <i class="fas fa-info-circle"></i> Esta acción no se puede deshacer.
+        </p>
+      </div>
+      <div class="card-footer bg-white border-0 d-flex justify-content-center gap-3 pb-5">
+        <a href="{{ listar_url }}
+        "
+          class="btn btn-pastel-secondary">
+          <i class="fas fa-times"></i> Cancelar
+        </a>
+
+        <form method="post" action="" id="formEliminar">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-pastel-danger"><i class="fas fa-check"></i> Sí, eliminar definitivamente</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('formEliminar').addEventListener('submit', function (e) {
+      e.preventDefault()
+    
+      Swal.fire({
+        title: '¿Confirmas?',
+        text: 'El registro desaparecerá para siempre',
+        icon: 'warning',
+        iconColor: '#ffb3ba',
+        showCancelButton: true,
+        confirmButtonColor: '#ffb3ba',
+        cancelButtonColor: '#bae1ff',
+        confirmButtonText: 'Sí, borrar',
+        cancelButtonText: 'No, volver',
+        reverseButtons: true,
+        background: '#fff',
+        borderRadius: '20px',
+        customClass: {
+          confirmButton: 'btn-pastel-danger',
+          cancelButton: 'btn-pastel-secondary'
+        }
+      }).then((result) => {
+        if (result.value) {
+          this.submit()
+        }
+      })
+    })
+  </script>
+{% endblock %}

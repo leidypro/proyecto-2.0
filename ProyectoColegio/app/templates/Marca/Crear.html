@@ -1,0 +1,12 @@
+{% extends 'Create_generic.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% block breadcrumb_list %}Marcas{% endblock %}
+{% block breadcrumb_active %}
+{% if object %}Editar Marca{% else %}Nueva Marca{% endif %}
+{% endblock %}
+
+{% block titulo %}
+Crear Marca
+{% endblock %}
+

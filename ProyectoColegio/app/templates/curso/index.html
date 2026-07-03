@@ -1,0 +1,281 @@
+{% extends 'list_generic.html' %}
+{% load static %}
+
+{% block titulo %}
+  {{ titulo }}
+  <link rel="stylesheet" href="{% static 'css/reportes.css' %}">
+{% endblock %}
+
+{% block exportar %}
+{% if modo == "cursos" %}
+<div class="contenedor-exportar d-flex align-items-center gap-2">
+
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle"
+                type="button"
+                id="botonSelector"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+                style="border-radius: 8px; min-width: 200px;">
+            <i class="fas fa-graduation-cap me-1"></i>
+            <span id="textoSeleccionado">Seleccionar Curso</span>
+        </button>
+
+        <div class="dropdown-menu shadow" aria-labelledby="botonSelector">
+            <a class="dropdown-item"
+               href="#"
+               onclick="cambiarCurso('', 'Todos los Cursos')">
+                <strong>--- Todos los Cursos ---</strong>
+            </a>
+
+            {% for curso in object_list %}
+            <a class="dropdown-item"
+               href="#"
+               onclick="cambiarCurso('{{ curso.id }}', '{{ curso.get_grado_display }} - {{ curso.codigo }}')">
+                {{ curso.get_grado_display }} - {{ curso.codigo }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if perms.app.view_curso %}
+    <div class="d-flex gap-2">
+        <a href="#" id="linkPDF" class="btn-pdf">
+            <i class="fas fa-file-pdf me-1"></i> PDF
+        </a>
+
+        <a href="#" id="linkExcel" class="btn-excel">
+            <i class="fas fa-file-excel me-1"></i> Excel
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endif %}
+{% endblock %}
+
+{% block js %}
+{% if modo == "cursos" %}
+<script>
+    function cambiarCurso(id, nombre) {
+        document.getElementById('textoSeleccionado').innerText = nombre;
+        document.getElementById('textoSeleccionado').setAttribute('data-curso-id', id);
+
+        let urlPDF = "{% url 'app:exportar_cursos' %}";
+        let urlExcel = "{% url 'app:exportar_cursos_excel' %}";
+
+        if (id !== '') {
+            urlPDF += "?curso_id=" + id;
+            urlExcel += "?curso_id=" + id;
+        }
+
+        document.getElementById('linkPDF').setAttribute('href', urlPDF);
+        document.getElementById('linkExcel').setAttribute('href', urlExcel);
+    }
+</script>
+
+<script>
+  $(document).ready(function () {
+    const tabla = $('#Tabla').DataTable();
+
+    document.getElementById('btn_filtrar').addEventListener('click', function () {
+      const buscar = document.getElementById('buscar').value;
+
+      let url = window.location.pathname + '?';
+
+      if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+
+      window.location.href = url;
+    });
+
+    const urlPdf = "{% url 'app:exportar_cursos' %}";
+    const urlExcel = "{% url 'app:exportar_cursos_excel' %}";
+
+    document.getElementById("linkPDF").addEventListener("click", function(e) {
+      e.preventDefault();
+      const buscar = document.getElementById("buscar").value;
+      const cursoId = document.getElementById("textoSeleccionado").getAttribute("data-curso-id");
+      
+      let url = `${urlPdf}?`;
+      if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+      if (cursoId) url += `curso_id=${cursoId}&`;
+      
+      window.location.href = url;
+    });
+
+    document.getElementById("linkExcel").addEventListener("click", function(e) {
+      e.preventDefault();
+      const buscar = document.getElementById("buscar").value;
+      const cursoId = document.getElementById("textoSeleccionado").getAttribute("data-curso-id");
+      
+      let url = `${urlExcel}?`;
+      if (buscar) url += `buscar=${encodeURIComponent(buscar)}&`;
+      if (cursoId) url += `curso_id=${cursoId}&`;
+      
+      window.location.href = url;
+    });
+  });
+</script>
+{% endif %}
+<script>
+$(document).ready(function () {
+    if ($.fn.DataTable.isDataTable('#Tabla')) {
+        $('#Tabla').DataTable().destroy();
+    }
+
+    $('#Tabla').DataTable({
+        responsive: true,
+        paging: true,
+        pageLength: 10,
+        lengthMenu: [
+            [5, 10, 25, 50, 100],
+            [5, 10, 25, 50, 100]
+        ],
+        ordering: true,
+        searching: true,
+        info: true,
+        autoWidth: false,
+        language: {
+            url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+        }
+    });
+});
+
+</script>
+{% endblock %}
+
+{% block subtitulo %}
+    <span>{{ subtitulo }}</span>
+{% endblock %}
+
+{% block breadcrumb_items %}
+{% if modo == "cursos" %}
+<li class="breadcrumb-item active">Cursos</li>
+{% else %}
+<li class="breadcrumb-item active">Estudiantes por Curso</li>
+{% endif %}
+{% endblock %}
+
+{% block filtros_adicionales %}
+{% if modo == "cursos" %}
+<div class="card card-custom mb-3 p-3 shadow-sm border-0 rounded-4" style="background: #f8f9fa;">
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <i class="fas fa-filter me-2 text-muted"></i>
+    <span class="fw-semibold text-muted small">Filtros:</span>
+    
+    <input type="text"
+           id="buscar"
+           name="buscar"
+           placeholder="Buscar curso o docente..."
+           class="form-control form-control-sm"
+           style="min-width: 200px;"
+           value="{{ request.GET.buscar|default:'' }}">
+
+    <button type="button" id="btn_filtrar" class="btn btn-sm btn-primary">
+      <i class="fas fa-search me-1"></i> Filtrar
+    </button>
+
+    <a href="?" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-undo me-1"></i> Limpiar
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block columns %}
+<th>
+    <i class="fas fa-hashtag me-2"></i>ID
+</th>
+
+{% if modo == "cursos" %}
+
+    <th>
+        <i class="fas fa-book me-2"></i>Nombre del Curso
+    </th>
+
+    <th>
+        <i class="fas fa-chalkboard-teacher me-2"></i>Nombre Docente
+    </th>
+
+    {% if perms.app.change_curso or perms.app.delete_curso %}
+    <th class="text-center">
+        <i class="fas fa-tools me-2"></i>Acciones
+    </th>
+    {% endif %}
+
+{% else %}
+
+    <th>
+        <i class="fas fa-user me-2"></i>Nombre del Estudiante
+    </th>
+
+    <th>
+        <i class="fas fa-graduation-cap me-2"></i>Estado
+    </th>
+
+    <th>
+        <i class="fas fa-book me-2"></i>Curso
+    </th>
+
+{% endif %}
+{% endblock %}
+
+{% block rows %}
+
+{% if modo == "cursos" %}
+
+    {% for curso in object_list %}
+    <tr>
+        <td>{{ curso.id }}</td>
+        <td>{{ curso.get_grado_display }}</td>
+        <td>{{ curso.docenteid }}</td>
+
+        {% if perms.app.change_curso or perms.app.delete_curso %}
+        <td class="text-center">
+
+            {% if perms.app.change_curso %}
+            <a href="{% url 'app:editar_curso' curso.id %}"
+               class="btn btn-sm me-1"
+               style="background-color: #3054f7; color: #ffffff; border-radius: 8px;"
+               title="Editar">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </a>
+            {% endif %}
+
+            {% if perms.app.delete_curso %}
+            <a href="{% url 'app:eliminar_curso' curso.id %}"
+               class="btn btn-sm"
+               style="background-color: #ff4d4d; color: white; border-radius: 8px;"
+               title="Eliminar">
+                <i class="fa-solid fa-trash"></i>
+            </a>
+            {% endif %}
+
+        </td>
+        {% endif %}
+
+    </tr>
+    {% endfor %}
+
+{% else %}
+
+    {% for estudiante in estudiantes %}
+    <tr>
+        <td>{{ estudiante.usuario.id }}</td>
+        <td>{{ estudiante.usuario.nombre }}</td>
+        <td>{{ estudiante.estadoMatricula }}</td>
+        <td>{{ curso.get_grado_display }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4" class="text-center">
+            No hay estudiantes asignados
+        </td>
+    </tr>
+    {% endfor %}
+
+{% endif %}
+
+{% endblock %}

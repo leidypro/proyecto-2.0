@@ -1,0 +1,190 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block body %}
+
+<body class="layout-blur">
+
+  <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+
+
+  {% include 'sidebar.html' %}
+
+  <div class="main-content">
+    {% include 'header.html' %}
+    {% block breadcrumb %}
+    <nav aria-label="breadcrumb" class="breadcrumb-container">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{% url 'app:dashboard' %}">
+            <i class="fas fa-home me-1"></i>Inicio
+          </a>
+        </li>
+        {% block breadcrumb_items %}{% endblock %}
+      </ol>
+    </nav>
+    {% endblock %}
+    {% block main %}
+    {% include 'main.html' %}
+    {% endblock %}
+
+    <div class="btn-chat" id="btnChat"><i class="fa-solid fa-comment"></i></div>
+
+<div class="chat-container" id="chatContainer">
+  <div class="chat-header">
+    <span><i class="fa-solid fa-graduation-cap"></i> Asistente San Nicolás</span>
+    <span id="cerrarChat" class="cerrar">✖</span>
+  </div>
+
+  <div class="chat-box" id="chatBox"></div>
+
+  <div class="chat-input">
+    <input type="text" id="inputMensaje" placeholder="Escribe tu consulta aquí..." autocomplete="off" />
+    <button id="btnEnviar">Enviar</button>
+  </div>
+</div>
+    <div class="modal fade" id="modalGeneral" tabindex="-1" aria-hidden="true">
+      <div id="contenedorModal"></div>
+    </div>
+    <div id="contenedorMensajes" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+  </div>
+
+    <!-- jQuery -->
+    <script src="{% static 'Js/jquery-3.6.0.min.js' %}"></script>
+
+  <!-- DataTables -->
+  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/responsive.dataTables.min.css' %}" />
+  <script src="{% static 'Js/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'Js/dataTables.responsive.min.js' %}"></script>
+  <!-- Bootstrap -->
+  <script src="{% static 'lib/bootstrap-4.4.1-dist/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'lib/bootstrap-4.4.1-dist/js/bootstrap.min.js' %}"></script>
+
+  <!-- AdminLTE -->
+  <script src="{% static 'lib/adminlte-3.0.4/js/adminlte.min.js' %}"></script>
+
+  <!-- SweetAlert -->
+  <script src="{% static 'lib/sweetalert2/sweetalert2.all.min.js' %}"></script>
+  <!-- Qr code -->
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    // Toggle sidebar on hamburger click
+    if (hamburger) {
+      hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        hamburger.classList.toggle('active');
+      });
+    }
+
+    // Toggle sidebar on mobile toggle button click
+    if (sidebarToggle) {
+      sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.add('active');
+        if (sidebarOverlay) sidebarOverlay.classList.add('active');
+      });
+    }
+
+    // Close sidebar when close button is clicked
+    if (sidebarClose) {
+      sidebarClose.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+      });
+    }
+
+    // Close sidebar when overlay is clicked
+    if (sidebarOverlay) {
+      sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+      });
+    }
+
+    // Close sidebar on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sidebar && sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+      }
+    });
+  </script>
+  {% if messages %}
+  <script id="django-messages" type="application/json">
+    [
+      {% for message in messages %}
+        {"tags": "{{ message.tags }}", "message": "{{ message|escapejs }}"}{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const messagesData = document.getElementById('django-messages');
+      if (messagesData) {
+        const messages = JSON.parse(messagesData.textContent);
+        messages.forEach(msg => {
+          if (msg.tags.includes('login')) {
+            Swal.fire({
+              toast: true,
+              position: "top-end",
+              title: msg.message,
+              icon: "success",
+              showConfirmButton: false,
+              timer: 2000,
+              timerProgressBar: true
+            });
+          } else {
+            Swal.fire({
+              title: msg.message,
+              icon: msg.tags,
+              showConfirmButton: false,
+              timer: 2000,
+              timerProgressBar: true
+            });
+          }
+        });
+      }
+    });
+  </script>
+  {% endif %}
+  <script src="{% static 'Js/modal.js' %}"></script>
+  <script src="{% static 'Js/accessibility.js' %}"></script>
+
+
+  <button class="accessibility-button" id="btnAccessibility" title="Accesibilidad">
+    <i class="fas fa-universal-access"></i>
+  </button>
+
+  <div class="accessibility-panel" id="accessibilityPanel">
+    <h4>Opciones de Accesibilidad</h4>
+    <div class="accessibility-option" id="btnContrast">
+      <i class="fas fa-adjust"></i> Alto Contraste
+    </div>
+    <div class="accessibility-option" id="btnIncreaseFont">
+      <i class="fas fa-plus"></i> Aumentar Texto
+    </div>
+    <div class="accessibility-option" id="btnDecreaseFont">
+      <i class="fas fa-minus"></i> Disminuir Texto
+    </div>
+    <div class="accessibility-option" id="btnResetFont">
+      <i class="fas fa-undo"></i> Restablecer Texto
+    </div>
+    <div class="accessibility-option" id="btnReadableFont">
+      <i class="fas fa-font"></i> Fuente Legible
+    </div>
+    <div class="accessibility-option" id="btnVoiceAssistant">
+      <i class="fas fa-volume-up"></i> Asistente de Voz
+    </div>
+  </div>
+
+  {% include 'footer.html' %}
+  {% block js %}
+
+  {% endblock %}
+</body>
+{% endblock %}

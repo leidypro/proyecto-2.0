@@ -1,0 +1,135 @@
+<div class="modal-dialog modal-xl modal-dialog-centered modal-san-nicolas">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">Registrar Nuevo Tipo</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <form id="formGenericoModal" method="post" action="{{ request.path }}">
+      {% csrf_token %}
+      <div class="modal-body">
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label font-weight-bold">{{ field.label }}</label>
+            
+
+            <div class="input-group has-validation">
+                {{ field }}
+            </div>
+            <div id="error_{{ field.name }}" class="text-danger small invalid-feedback d-block">
+                {{ field.errors|striptags }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="Guardar">Guardar Cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+<style>
+
+
+.modal-san-nicolas {
+  max-width: 900px;
+}
+
+/* CONTENEDOR */
+.modal-san-nicolas .modal-content {
+  background-color: #ffffff;
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+/* HEADER */
+.modal-san-nicolas .modal-header {
+  background-color: #0b3c5d; /* Azul institucional */
+  color: #ffffff;
+  border-bottom: 4px solid #c1121f; /* Línea roja */
+  padding: 1rem 1.5rem;
+}
+
+.modal-san-nicolas .modal-title {
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+/* BOTÓN CERRAR */
+.modal-san-nicolas .btn-close {
+  filter: invert(1);
+}
+
+/* BODY */
+.modal-san-nicolas .modal-body {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+}
+
+/* LABELS */
+.modal-san-nicolas label {
+  color: #0b3c5d;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* INPUTS */
+.modal-san-nicolas input,
+.modal-san-nicolas select,
+.modal-san-nicolas textarea {
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  padding: 0.55rem 0.75rem;
+  transition: all 0.25s ease;
+}
+
+.modal-san-nicolas input:focus,
+.modal-san-nicolas select:focus,
+.modal-san-nicolas textarea:focus {
+  border-color: #c1121f;
+  box-shadow: 0 0 0 0.15rem rgba(193, 18, 31, 0.25);
+}
+
+/* ERRORES */
+.modal-san-nicolas .invalid-feedback {
+  color: #c1121f;
+  font-size: 0.8rem;
+}
+
+/* FOOTER */
+.modal-san-nicolas .modal-footer {
+  background-color: #ffffff;
+  border-top: none;
+  padding: 1rem 1.5rem;
+}
+
+/* BOTÓN CANCELAR */
+.modal-san-nicolas .btn-secondary {
+  background-color: #e5e7eb;
+  border: none;
+  color: #374151;
+}
+
+.modal-san-nicolas .btn-secondary:hover {
+  background-color: #d1d5db;
+}
+
+.modal-san-nicolas .btn-primary {
+  background-color: #c1121f; 
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 1.5rem;
+  font-weight: 500;
+}
+
+.modal-san-nicolas .btn-primary:hover {
+  background-color: #9f0f1a;
+}
+
+
+.modal-backdrop.show {
+  background-color: rgba(11, 60, 93, 0.55);
+}
+</style>

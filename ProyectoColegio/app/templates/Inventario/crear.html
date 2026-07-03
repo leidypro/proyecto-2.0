@@ -1,0 +1,42 @@
+{% extends 'create_generic.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block breadcrumb_list %}Inventario{% endblock %}
+{% block breadcrumb_active %}Nuevo Elemento{% endblock %}
+
+{% block titulo %}
+{{titulosi}}
+{% endblock %}
+
+{% block form %}
+    {% csrf_token %}
+    <div class="row"> {% for field in form.visible_fields %}
+            <div class="{% if field.field.widget.input_type == None %}col-md-12{% else %}col-md-4{% endif %} mb-4">
+                
+                <label class="form-label fw-bold" style="color: #1C2E4A;">{{ field.label }}</label>
+
+
+                {{ field|add_class:'form-control form-control-custom'|attr:'autocomplete:off'|attr:'style:resize:None;' }}
+                <p class = "error" id="error_{{field.label}}"></p>
+                {% if 'data-crear-url' in field.field.widget.attrs %}
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary mt-2 shadow-sm" 
+                                onclick="abrirModalCreacionDesdeCampo('{{ field.id_for_label }}')">
+                            <i class="fas fa-plus-circle"></i> Crear Nuevo {{ field.label }}
+                        </button>
+                    </div>
+                {% endif %}
+
+
+                {% if field.errors %}
+                    {% for error in field.errors %}
+                        <div class="text-danger mt-1 small animated fadeIn">
+                            <i class="fas fa-exclamation-circle me-1"></i> {{ error }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

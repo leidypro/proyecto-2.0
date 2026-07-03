@@ -1,0 +1,149 @@
+{% load static %}
+
+<button class="sidebar-toggle d-md-none" id="sidebarToggle" aria-label="Abrir menú">
+  <i class="fas fa-bars"></i>
+</button>
+
+<div class="sidebar-overlay d-md-none" id="sidebarOverlay"></div>
+
+<div id="sidebar" class="sidebar">
+  <button class="sidebar-close d-md-none" id="sidebarClose" aria-label="Cerrar menú">
+    <i class="fas fa-times"></i>
+  </button>
+  
+  <div class="profile-card">
+    <div class="avatar-container">
+      {% if request.user.img_usuario %}
+        <img src="{{ request.user.img_usuario.url }}" alt="{{ request.user.nombre }}" class="profile-avatar" />
+      {% else %}
+        <div class="profile-avatar-placeholder">
+          <i class="fa-solid fa-user"></i>
+        </div>
+      {% endif %}
+      
+      <a onclick="abrirPerfil()" class="edit-profile-badge" title="Editar Perfil">
+        <i class="fa-solid fa-pen-to-square"></i>
+      </a>
+    </div>
+
+    <div class="profile-info">
+      <h4 class="name">{{ request.user.nombre }}</h4>
+      <span class="badge-role">{{ request.user.get_rol }}</span>
+    </div>
+
+    <div class="profile-actions">
+      <button onclick="abrirNotificacion()" class="btn-profile-notif">
+        <i class="fa-solid fa-bell"></i> Mis Notificaciones
+      </button>
+
+      {% if request.user.get_rol == "Administrador" %}
+      <div class="dropdown w-100 mt-2">
+        <button class="btn btn-backup-custom dropdown-toggle btn-sm w-100" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <i class="fa-solid fa-database me-1"></i> Respaldos
+        </button>
+        <div class="dropdown-menu shadow border-0">
+          <a class="dropdown-item" href="{% url 'app:backup' %}">
+            <i class="fa-solid fa-sliders me-2 text-muted"></i> Ir a panel
+          </a>
+          <div class="dropdown-divider"></div>
+          <form method="POST" action="{% url 'app:backup' %}">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="backup_completo" />
+            <button type="submit" class="dropdown-item text-primary">
+              <i class="fa-solid fa-cloud-arrow-up me-2"></i> Realizar Respaldo
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <ul>
+    <li>
+      <a href="{% url 'app:dashboard' %}">
+        <i class="fa-solid fa-house"></i> Inicio
+      </a>
+    </li>
+
+    <li>
+      <a href="{% url 'app:index_curso' %}">
+        <i class="fa-solid fa-graduation-cap"></i> 
+        {% if request.user.get_rol == "Administrador" %}
+            Cursos
+        {% else %}
+            Mi Curso
+        {% endif %}
+      </a>
+    </li>
+
+    {% if request.user.get_rol == "Administrador" %}
+    <li>
+      <a href="{% url 'app:index_usuario' %}">
+        <i class="fa-solid fa-user"></i> Usuarios
+      </a>
+    </li>
+    {% endif %}
+
+    {% if request.user.get_rol == "Administrador" %}
+    <li>
+      <a href="{% url 'app:index_relacion' %}">
+        <i class="fa-solid fa-user-group"></i> Estudiante — Acudiente
+      </a>
+    </li>
+    {% endif %}
+
+    {% if request.user.get_rol == "Administrador" or request.user.get_rol == "Docente" %}
+    <li>
+      <a href="{% url 'app:index_asistencia' %}">
+        <i class="fa-solid fa-check"></i> Asistencia
+      </a>
+    </li>
+    {% endif %}
+
+    {% if request.user.get_rol == "Administrador" or request.user.get_rol == "Docente" %}
+    <li>
+      <a href="{% url 'app:index_inventario' %}">
+        <i class="fa-solid fa-tv"></i> Inventario
+      </a>
+    </li>
+    {% endif %}
+
+    {% if request.user.get_rol == "Administrador" %}
+    <li>
+      <a href="{% url 'app:index_movimiento' %}">
+        <i class="fa-solid fa-exchange-alt"></i> Movimientos
+      </a>
+    </li>
+    {% endif %}
+
+    {% if request.user.get_rol == "Administrador" %}
+    <li>
+      <a href="{% url 'app:index_evento' %}">
+        <i class="fa-regular fa-calendar"></i> Eventos
+      </a>
+    </li>
+    {% endif %}
+
+    <li>
+      <a href="{% url 'app:index_notificacion' %}">
+        <i class="fa-regular fa-file"></i> Notificaciones
+      </a>
+    </li>
+
+    <li>
+      <form action="{% url 'login:logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="a">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
+        </button>
+      </form>
+    </li>
+
+    <li>
+        <a href="{% static 'manuales/manual_usuario.pdf' %}" target="_blank">
+            <i class="fa-solid fa-question"></i> Ayuda
+        </a>
+    </li>
+  </ul>
+</div>

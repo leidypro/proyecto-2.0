@@ -1,0 +1,92 @@
+<div class="modal-dialog modal-xl modal-dialog-centered modal-san-nicolas">
+  <div class="modal-content shadow-lg border-0 rounded-4" style="background-color: #fdfefe;">
+    
+    <div class="modal-header border-0 p-4 text-white" style="background-color: #1d3557;">
+      <h5 class="modal-title fw-bold" style="letter-spacing: 0.5px;">
+        <i class="fa-solid fa-bell me-2" style="color: #ffb703;"></i> Notificaciones
+      </h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    </div>
+
+    <div class="modal-body p-4" style="max-height: 520px; overflow-y: auto; background-color: #f8f9fa;">
+      {% if notificaciones %}
+        {% for noti in notificaciones %}
+          
+          <div class="card mb-3 shadow-sm border-0 notification-item rounded-3" 
+               data-notificacion-id="{{ noti.id }}"
+               style="border-left: 5px solid {% if noti.estado == 'no_leida' %}#b71c1c{% else %}#6c757d{% endif %} !important; 
+                      background-color: {% if noti.estado == 'no_leida' %}#fff5f5{% else %}#ffffff{% endif %};">
+            
+            <div class="card-body p-3">
+              <div class="row align-items-center">
+                
+                <div class="col-12 col-md-8 d-flex align-items-start gap-3">
+                  <div class="p-2 rounded-circle mt-1 d-none d-sm-block" 
+                       style="background-color: {% if noti.estado == 'no_leida' %}#ffe5ec{% else %}#e9ecef{% endif %}; flex-shrink: 0;">
+                    <i class="fa-solid {% if noti.estado == 'no_leida' %}fa-envelope text-danger{% else %}fa-envelope-open text-muted{% endif %} fs-5"></i>
+                  </div>
+                  
+                  <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-1" style="color: #1d3557;">{{ noti.titulo }}</h6>
+                    <p class="mb-2 text-secondary" style="font-size: 0.95rem; text-align: justify;">{{ noti.mensaje }}</p>
+                    <small class="text-muted d-flex align-items-center gap-1" style="font-size: 0.82rem;">
+                      <i class="fa-regular fa-clock"></i>
+                      {{ noti.fecha_envio }}
+                    </small>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0 d-flex flex-row flex-md-column align-items-center align-items-md-end justify-content-between justify-content-md-center gap-2" 
+                     style="border-left: 1px solid #e9ecef; min-height: 65px;">
+                  
+                  <span class="badge px-3 py-2 rounded-pill fs-7 order-md-1" 
+                        style="background-color: {% if noti.estado == 'no_leida' %}#b71c1c{% else %}#6c757d{% endif %}; font-weight: 500; min-width: 80px; text-center;">
+                    {% if noti.estado == 'no_leida' %} Nuevo {% else %} Leído {% endif %}
+                  </span>
+
+                  <div class="order-md-2 mt-md-1">
+                    {% if noti.estado == 'no_leida' %}
+                      <button class="btn btn-sm px-3 rounded-pill text-white btn-marcar-leida" 
+                              style="background-color: #b71c1c; font-size: 0.8rem; transition: 0.2s; white-space: nowrap;"
+                              onmouseover="this.style.backgroundColor='#901414'" 
+                              onmouseout="this.style.backgroundColor='#b71c1c'">
+                        Marcar como leída
+                      </button>
+                    {% else %}
+                      <button class="btn btn-sm px-3 rounded-pill btn-outline-secondary border-0" 
+                              style="font-size: 0.8rem; white-space: nowrap;" disabled>
+                        <i class="fa-solid fa-check-double me-1"></i> Ya revisado
+                      </button>
+                    {% endif %}
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        {% endfor %}
+      {% else %}
+        <div class="text-center py-5 rounded-4" style="background-color: #ffffff; border: 2px dashed #ffe5ec;">
+          <div class="p-4 rounded-circle d-inline-block mb-3" style="background-color: #fff5f5;">
+            <i class="fa-solid fa-bell-slash fa-3x" style="color: #b71c1c; opacity: 0.6;"></i>
+          </div>
+          <h5 class="fw-bold" style="color: #1d3557;">Tu bandeja está limpia</h5>
+          <p class="text-muted mb-0 mx-auto" style="max-width: 350px;">No tienes notificaciones pendientes por el momento.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="modal-footer border-0 p-3" style="background-color: #ffffff;">
+      <button class="btn px-4 text-white rounded-3 fw-medium" 
+              id="btnCerrarNoti2" 
+              class="btnCerrarNoti2"
+              style="background-color: #1d3557;"
+              onmouseover="this.style.backgroundColor='#12223a'" 
+              onmouseout="this.style.backgroundColor='#1d3557'">
+        Cerrar ventana
+      </button>
+    </div>
+  </div>
+</div>
