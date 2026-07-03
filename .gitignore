@@ -56,4 +56,4 @@ staticfiles/
 # migrations/__pycache__/
 # *.pyc
 
-**/img/**
+ProyectoColegio/img/**
