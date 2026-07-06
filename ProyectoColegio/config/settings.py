@@ -30,7 +30,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://proyecto-2-0-1qzv.onrender.com/',
+    'https://proyecto-2-0-1qzv.onrender.com',
 ]
 # Application definition
 
